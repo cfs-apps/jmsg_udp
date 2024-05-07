@@ -1,0 +1,164 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+
+    Copyright 2022 bitValence, Inc.
+    All Rights Reserved.
+
+    This program is free software; you can modify and/or redistribute it
+    under the terms of the GNU Affero General Public License
+    as published by the Free Software Foundation; version 3 with
+    attribution addendums as found in the LICENSE.txt.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Affero General Public License for more details.
+
+    Purpose: 
+      This defines the JSON Gateway app interface.
+
+    Notes:
+      1. This document adheres to the Electronic Data Sheet (EDS) XML schema 
+         as prescribed in CCSDS book 876.0.         
+
+-->
+<PackageFile xmlns="http://www.ccsds.org/schema/sois/seds">
+  <Package name="JSON_GW" shortDescription="cFS Basecamp JSON Gateway application">
+    <DataTypeSet>
+
+      <!--***********************************-->
+      <!--**** DataTypeSet:  Entry Types ****-->
+      <!--***********************************-->
+
+            
+      <!--***************************************-->
+      <!--**** DataTypeSet: Command Payloads ****-->
+      <!--***************************************-->
+
+
+      <ContainerDataType name="ConfigTopicPlugin_CmdPayload" shortDescription="Enable/disable a topic plugin">
+        <EntryList>
+          <Entry name="Id"     type="MQTT_GW/TopicPlugin"      shortDescription="Plugin Topic identifier" />
+          <Entry name="Action" type="APP_C_FW/ConfigEnaAction" shortDescription="Enable/disable a plugin" />
+       </EntryList>
+      </ContainerDataType>
+
+      <ContainerDataType name="ConfigSbTopicTest_CmdPayload" shortDescription="Start or stop a SB topic test">
+        <EntryList>
+          <Entry name="Id"     type="MQTT_GW/TopicPlugin"       shortDescription="Plugin Topic identifier" />
+          <Entry name="Action" type="APP_C_FW/ConfigExeAction"  shortDescription="Start/stop a test" />
+          <Entry name="Param"  type="BASE_TYPES/int16"          shortDescription="Topic specific test parameter" />
+       </EntryList>
+      </ContainerDataType>
+
+      <!--*****************************************-->
+      <!--**** DataTypeSet: Telemetry Payloads ****-->
+      <!--*****************************************-->
+    
+      <ContainerDataType name="StatusTlm_Payload" shortDescription="App's state and status summary">
+        <EntryList>
+          <Entry name="ValidCmdCnt"     type="BASE_TYPES/uint16"   />
+          <Entry name="InvalidCmdCnt"   type="BASE_TYPES/uint16"   />
+          <Entry name="RxUdpConnected"  type="APP_C_FW/BooleanUint8" />
+          <Entry name="TxUdpConnected"  type="APP_C_FW/BooleanUint8" />
+          <Entry name="RxUdpMsgCnt"     type="BASE_TYPES/uint32" />
+          <Entry name="RxUdpMsgErrCnt"  type="BASE_TYPES/uint32" />
+          <Entry name="TxUdpMsgCnt"     type="BASE_TYPES/uint32" />
+          <Entry name="TxUdpMsgErrCnt"  type="BASE_TYPES/uint32" />
+        </EntryList>
+      </ContainerDataType>
+
+\      
+      <!--**************************************-->
+      <!--**** DataTypeSet: Command Packets ****-->
+      <!--**************************************-->
+
+      <ContainerDataType name="CommandBase" baseType="CFE_HDR/CommandHeader">
+      </ContainerDataType>
+
+      <ContainerDataType name="Noop" baseType="CommandBase" shortDescription="Generate an info event message with app version">
+        <ConstraintSet>
+          <ValueConstraint entry="Sec.FunctionCode" value="${APP_C_FW/NOOP_CC}" />
+        </ConstraintSet>
+      </ContainerDataType>
+
+      <ContainerDataType name="Reset" baseType="CommandBase" shortDescription="Reset app to a known state">
+        <ConstraintSet>
+          <ValueConstraint entry="Sec.FunctionCode" value="${APP_C_FW/RESET_CC}" />
+        </ConstraintSet>
+      </ContainerDataType>
+
+      <ContainerDataType name="ConfigTopicPlugin" baseType="CommandBase" shortDescription="">
+        <ConstraintSet>
+          <ValueConstraint entry="Sec.FunctionCode" value="${APP_C_FW/APP_BASE_CC} + 1" />
+        </ConstraintSet>
+        <EntryList>
+          <Entry type="ConfigTopicPlugin_CmdPayload" name="Payload" />
+        </EntryList>
+      </ContainerDataType>
+
+      <ContainerDataType name="ConfigSbTopicTest" baseType="CommandBase" shortDescription="Enable/disable topic test">
+        <ConstraintSet>
+          <ValueConstraint entry="Sec.FunctionCode" value="${APP_C_FW/APP_BASE_CC} + 2" />
+        </ConstraintSet>
+        <EntryList>
+          <Entry type="ConfigSbTopicTest_CmdPayload" name="Payload" />
+        </EntryList>
+      </ContainerDataType>
+
+
+      <!--****************************************-->
+      <!--**** DataTypeSet: Telemetry Packets ****-->
+      <!--****************************************-->
+
+      <ContainerDataType name="StatusTlm" baseType="CFE_HDR/TelemetryHeader">
+        <EntryList>
+          <Entry type="StatusTlm_Payload" name="Payload" />
+        </EntryList>
+      </ContainerDataType>
+     
+    </DataTypeSet>
+    
+    <ComponentSet>
+      <Component name="Application">
+
+        <!--***********************************-->
+        <!--**** Component Set: Interfaces ****-->
+        <!--***********************************-->
+      
+        <RequiredInterfaceSet>
+        
+          <Interface name="CMD" shortDescription="Software bus telecommand interface" type="CFE_SB/Telecommand">
+            <GenericTypeMapSet>
+              <GenericTypeMap name="TelecommandDataType" type="CommandBase" />
+            </GenericTypeMapSet>
+          </Interface>
+          
+          <Interface name="STATUS_TLM" shortDescription="Software bus housekeeping telemetry interface" type="CFE_SB/Telemetry">
+            <GenericTypeMapSet>
+              <GenericTypeMap name="TelemetryDataType" type="StatusTlm" />
+            </GenericTypeMapSet>
+          </Interface>
+
+        </RequiredInterfaceSet>
+
+        <!--***************************************-->
+        <!--**** Component Set: Implementation ****-->
+        <!--***************************************-->
+
+        <Implementation>
+          <VariableSet>
+            <Variable type="BASE_TYPES/uint16" readOnly="true" name="CmdTopicId"        initialValue="${CFE_MISSION/JSON_GW_CMD_TOPICID}" />
+            <Variable type="BASE_TYPES/uint16" readOnly="true" name="StatusTlmTopicId"  initialValue="${CFE_MISSION/JSON_GW_STATUS_TLM_TOPICID}" />
+          </VariableSet>
+          <!-- Assign fixed numbers to the "TopicId" parameter of each interface -->
+          <ParameterMapSet>          
+            <ParameterMap interface="CMD"         parameter="TopicId" variableRef="CmdTopicId" />
+            <ParameterMap interface="STATUS_TLM"  parameter="TopicId" variableRef="StatusTlmTopicId" />
+          </ParameterMapSet>
+        </Implementation>
+      </Component>
+    </ComponentSet>
+    
+  </Package>
+</PackageFile>

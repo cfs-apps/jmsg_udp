@@ -1,0 +1,33 @@
+{ 
+
+   "app": {
+   
+   "title": "JSON_GW",
+   "version": "0.9.0",
+   "supplier": "Open STEMware",
+   "copyright": "bitValence",
+   "url": "https://github.com/cfs-apps/json_gw",
+
+   "description": [
+      "Provide a gateway between the Software Bus and",
+      "JSON messages transmitted using UDP."
+   ],
+
+   "cfs": {
+      "cfe-type": "CFE_APP",
+      "obj-file": "json_gw",
+      "entry-symbol": "JSON_GW_AppMain",
+      "name": "JSON_GW",
+      "priority": 70,
+      "stack": 32768,
+      "load_addr": 0,
+      "exception-action": 0,
+      "app-framework": "osk",
+      "tables": ["json_gw_ini.json"]
+   },
+
+   "requires": ["app_c_fw", "mqtt_gw"]
+
+}}
+
+
