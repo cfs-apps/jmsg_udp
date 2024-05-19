@@ -13,28 +13,28 @@
 ** GNU Affero General Public License for more details.
 **
 **  Purpose:
-**    Define platform configurations for the UDP Gateway application
+**    Define platform configurations for the JMSG UDP Gateway application
 **
 **  Notes:
 **    None
 **
 */
 
-#ifndef _json_gw_platform_cfg_
-#define _json_gw_platform_cfg_
+#ifndef _jmsg_udp_platform_cfg_
+#define _jmsg_udp_platform_cfg_
 
 /*
 ** Includes
 */
 
-#include "json_gw_mission_cfg.h"
+#include "jmsg_udp_mission_cfg.h"
 
 /******************************************************************************
 ** Platform Deployment Configurations
 */
 
-#define JSON_GW_PLATFORM_REV   0
-#define JSON_GW_INI_FILENAME   "/cf/json_gw_ini.json"
+#define JMSG_UDP_PLATFORM_REV   0
+#define JMSG_UDP_INI_FILENAME   "/cf/jmsg_udp_ini.json"
 
 
-#endif /* _json_gw_platform_cfg_ */
+#endif /* _jmsg_udp_platform_cfg_ */

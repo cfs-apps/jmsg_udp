@@ -1,36 +1,36 @@
 {
-   "title": "JOSN Gateway initialization file",
+   "title": "JMSG UDP Gateway initialization file",
    "description": ["Define runtime configurations",
                    "Rx and Tx are defined from a UDP perspective",
                    "Rx: Receive UDP JSON message and publish SB binary message",
                    "Tx: Receive a SB binary message and publish a UDP JSON message"],
    "config": {
       
-      "APP_CFE_NAME":     "JSON_GW",      
+      "APP_CFE_NAME":     "JMSG_UDP",      
       "APP_MAIN_PERF_ID": 91,
       
-      "JSON_GW_CMD_TOPICID" : 0,
-      "BC_SCH_2_SEC_TOPICID": 0,
-      "JSON_GW_STATUS_TLM_TOPICID": 0,
+      "JMSG_UDP_CMD_TOPICID" : 6250,
+      "BC_SCH_2_SEC_TOPICID": 6227,
+      "JMSG_UDP_STATUS_TLM_TOPICID": 2168,
             
-      "CMD_PIPE_NAME":  "JSON_GW_CMD_PIPE",
+      "CMD_PIPE_NAME":  "JMSG_UDP_CMD_PIPE",
       "CMD_PIPE_DEPTH": 5,
 
       "RX_UDP_PORT":         8888,
-      "RX_CHILD_NAME":       "JSON_GW_RX",
+      "RX_CHILD_NAME":       "JMSG_UDP_RX",
       "RX_CHILD_STACK_SIZE": 32768,
       "RX_CHILD_PRIORITY":   120,
       "RX_CHILD_PERF_ID":    92,
       
       "TX_UDP_PORT":         9999,
-      "TX_CHILD_NAME":       "JSON_GW_TX",
+      "TX_CHILD_NAME":       "JMSG_UDP_TX",
       "TX_CHILD_STACK_SIZE": 32768,
       "TX_CHILD_PRIORITY":   120,
       "TX_CHILD_PERF_ID":    93,
-      "TX_SB_PIPE_NAME":     "JSON_GW_TOPIC_PIPE",
+      "TX_SB_PIPE_NAME":     "JMSG_UDP_TOPIC_PIPE",
       "TX_SB_PIPE_DEPTH":    10,
       
-      "MQTT_TOPIC_TBL_DEF_FILE": "/cf/mqtt_gw_topics.json"
+      "JMSG_TOPIC_TBL_FILE": "/cf/jmsg_lib_topics.json"
    
    }
 }

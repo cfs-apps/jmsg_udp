@@ -2,11 +2,11 @@
 
    "app": {
    
-   "title": "JSON_GW",
+   "title": "JMSG_UDP",
    "version": "0.9.0",
    "supplier": "Open STEMware",
    "copyright": "bitValence",
-   "url": "https://github.com/cfs-apps/json_gw",
+   "url": "https://github.com/cfs-apps/jmsg_udp",
 
    "description": [
       "Provide a gateway between the Software Bus and",
@@ -15,18 +15,18 @@
 
    "cfs": {
       "cfe-type": "CFE_APP",
-      "obj-file": "json_gw",
-      "entry-symbol": "JSON_GW_AppMain",
-      "name": "JSON_GW",
+      "obj-file": "jmsg_udp",
+      "entry-symbol": "JMSG_UDP_AppMain",
+      "name": "JMSG_UDP",
       "priority": 70,
       "stack": 32768,
       "load_addr": 0,
       "exception-action": 0,
       "app-framework": "osk",
-      "tables": ["json_gw_ini.json"]
+      "tables": ["jmsg_udp_ini.json"]
    },
 
-   "requires": ["app_c_fw", "mqtt_gw"]
+   "requires": ["app_c_fw", "jmsg_lib"]
 
 }}
 

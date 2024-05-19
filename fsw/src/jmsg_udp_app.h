@@ -20,12 +20,12 @@
 **   1. This app does not provide a generic message translation capability. It
 **      is expected to be used in constrained environments so a trade for
 **      simplicity and extendability was made over complexity and genericity.
-**      A separate JSON table is defined for each supported MQTT topic combined
+**      A separate JSON table is defined for each supported JMSG topic combined
 **      with a custom function to manage the translation.
 **
 */
-#ifndef _json_gw_app_
-#define _json_gw_app_
+#ifndef _jmsg_udp_app_
+#define _jmsg_udp_app_
 
 /*
 ** Includes
@@ -42,10 +42,10 @@
 ** Events
 */
 
-#define JSON_GW_INIT_APP_EID      (JSON_GW_BASE_EID + 0)
-#define JSON_GW_NOOP_EID          (JSON_GW_BASE_EID + 1)
-#define JSON_GW_EXIT_EID          (JSON_GW_BASE_EID + 2)
-#define JSON_GW_INVALID_MID_EID   (JSON_GW_BASE_EID + 3)
+#define JMSG_UDP_INIT_APP_EID      (JMSG_UDP_BASE_EID + 0)
+#define JMSG_UDP_NOOP_EID          (JMSG_UDP_BASE_EID + 1)
+#define JMSG_UDP_EXIT_EID          (JMSG_UDP_BASE_EID + 2)
+#define JMSG_UDP_INVALID_MID_EID   (JMSG_UDP_BASE_EID + 3)
 
 
 /**********************/
@@ -83,11 +83,11 @@ typedef struct
    ** Telemetry Packets
    */
    
-   JSON_GW_StatusTlm_t   StatusTlm;
+   JMSG_UDP_StatusTlm_t   StatusTlm;
 
    
    /*
-   ** JSON_GW State & Contained Objects
+   ** JMSG_UDP State & Contained Objects
    */ 
    
    uint32 PerfId;
@@ -97,14 +97,14 @@ typedef struct
        
    UDP_COMM_Class_t  UdpComm;
 
-} JSON_GW_Class_t;
+} JMSG_UDP_Class_t;
 
 
 /*******************/
 /** Exported Data **/
 /*******************/
 
-extern JSON_GW_Class_t  JsonGw;
+extern JMSG_UDP_Class_t  JMsgUdp;
 
 
 /************************/
@@ -116,7 +116,7 @@ extern JSON_GW_Class_t  JsonGw;
 ** Function: JSON_AppMain
 **
 */
-void JSON_GW_AppMain(void);
+void JMSG_UDP_AppMain(void);
 
 
-#endif /* _json_gw_app_ */
+#endif /* _jmsg_udp_app_ */

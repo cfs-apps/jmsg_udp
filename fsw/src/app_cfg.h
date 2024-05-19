@@ -13,7 +13,7 @@
 ** GNU Affero General Public License for more details.
 **
 ** Purpose:
-**   Define platform configurations for the JSON Gateway application
+**   Define platform configurations for the JMSG UDP Gateway application
 **
 ** Notes:
 **   1. These macros can only be build with the application and can't
@@ -29,8 +29,8 @@
 ** Includes
 */
 
-#include "json_gw_eds_typedefs.h"
-#include "json_gw_platform_cfg.h"
+#include "jmsg_udp_eds_typedefs.h"
+#include "jmsg_udp_platform_cfg.h"
 #include "app_c_fw.h"
 
 
@@ -44,14 +44,9 @@
 ** 0.9 - Prototype
 */
 
-#define  JSON_GW_MAJOR_VER      0
-#define  JSON_GW_MINOR_VER      9
+#define  JMSG_UDP_MAJOR_VER      0
+#define  JMSG_UDP_MINOR_VER      9
 
-/******************************************************************************
-**  INI File
-*/
-
-#define  JSON_GW_INI_MAX_STRINGS 20
 
 /******************************************************************************
 ** Init File declarations create:
@@ -75,9 +70,9 @@
 #define CFG_APP_CFE_NAME       APP_CFE_NAME
 #define CFG_APP_MAIN_PERF_ID   APP_MAIN_PERF_ID
 
-#define CFG_JSON_GW_CMD_TOPICID         JSON_GW_CMD_TOPICID
-#define CFG_SEND_STATUS_TLM_TOPICID     BC_SCH_2_SEC_TOPICID
-#define CFG_JSON_GW_STATUS_TLM_TOPICID  JSON_GW_STATUS_TLM_TOPICID
+#define CFG_JMSG_UDP_CMD_TOPICID         JMSG_UDP_CMD_TOPICID
+#define CFG_SEND_STATUS_TLM_TOPICID      BC_SCH_2_SEC_TOPICID
+#define CFG_JMSG_UDP_STATUS_TLM_TOPICID  JMSG_UDP_STATUS_TLM_TOPICID
 
 #define CFG_CMD_PIPE_NAME   CMD_PIPE_NAME
 #define CFG_CMD_PIPE_DEPTH  CMD_PIPE_DEPTH
@@ -96,15 +91,15 @@
 #define CFG_TX_SB_PIPE_NAME      TX_SB_PIPE_NAME
 #define CFG_TX_SB_PIPE_DEPTH     TX_SB_PIPE_DEPTH
 
-#define CFG_MQTT_TOPIC_TBL_DEF_FILE  MQTT_TOPIC_TBL_DEF_FILE
+#define CFG_JMSG_TOPIC_TBL_FILE  JMSG_TOPIC_TBL_FILE
 
 
 #define APP_CONFIG(XX) \
    XX(APP_CFE_NAME,char*) \
    XX(APP_MAIN_PERF_ID,uint32) \
-   XX(JSON_GW_CMD_TOPICID,uint32) \
+   XX(JMSG_UDP_CMD_TOPICID,uint32) \
    XX(BC_SCH_2_SEC_TOPICID,uint32) \
-   XX(JSON_GW_STATUS_TLM_TOPICID,uint32) \
+   XX(JMSG_UDP_STATUS_TLM_TOPICID,uint32) \
    XX(CMD_PIPE_NAME,char*) \
    XX(CMD_PIPE_DEPTH,uint32) \
    XX(RX_UDP_PORT,uint32) \
@@ -119,7 +114,7 @@
    XX(TX_CHILD_PERF_ID,uint32) \
    XX(TX_SB_PIPE_NAME,char*) \
    XX(TX_SB_PIPE_DEPTH,uint32) \
-   XX(MQTT_TOPIC_TBL_DEF_FILE,char*)
+   XX(JMSG_TOPIC_TBL_FILE,char*)
 
 DECLARE_ENUM(Config,APP_CONFIG)
 
@@ -132,9 +127,9 @@ DECLARE_ENUM(Config,APP_CONFIG)
 ** exceeded so it is the developer's responsibility to verify the ranges. 
 */
 
-#define JSON_GW_BASE_EID    (APP_C_FW_APP_BASE_EID +  0)
+#define JMSG_UDP_BASE_EID   (APP_C_FW_APP_BASE_EID +  0)
 #define UDP_COMM_BASE_EID   (APP_C_FW_APP_BASE_EID + 20)
-// Topic plugin macros are defined in mqtt_gw_topic_plugin.h and start at (APP_C_FW_APP_BASE_EID + 200)
+// Topic plugin macros are defined in jmsg_lib/eds/jmsg_usr.xml
 
 
 /******************************************************************************

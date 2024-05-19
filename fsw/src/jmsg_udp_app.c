@@ -25,19 +25,19 @@
 */
 
 #include <string.h>
-#include "json_gw_app.h"
-#include "json_gw_eds_cc.h"
+#include "jmsg_udp_app.h"
+#include "jmsg_udp_eds_cc.h"
 
 /***********************/
 /** Macro Definitions **/
 /***********************/
 
 /* Convenience macros */
-#define  INITBL_OBJ      (&(JsonGw.IniTbl))
-#define  CMDMGR_OBJ      (&(JsonGw.CmdMgr))
-#define  RX_CHILDMGR_OBJ (&(JsonGw.RxChildMgr))
-#define  TX_CHILDMGR_OBJ (&(JsonGw.TxChildMgr))
-#define  UDP_COMM_OBJ    (&(JsonGw.UdpComm))
+#define  INITBL_OBJ      (&(JMsgUdp.IniTbl))
+#define  CMDMGR_OBJ      (&(JMsgUdp.CmdMgr))
+#define  RX_CHILDMGR_OBJ (&(JMsgUdp.RxChildMgr))
+#define  TX_CHILDMGR_OBJ (&(JMsgUdp.TxChildMgr))
+#define  UDP_COMM_OBJ    (&(JMsgUdp.UdpComm))
 
 /*******************************/
 /** Local Function Prototypes **/
@@ -68,14 +68,14 @@ static CFE_EVS_BinFilter_t  EventFilters[] =
 /** Global Data **/
 /*****************/
 
-JSON_GW_Class_t   JsonGw;
+JMSG_UDP_Class_t   JMsgUdp;
 
 
 /******************************************************************************
-** Function: JSON_GW_AppMain
+** Function: JMSG_UDP_AppMain
 **
 */
-void JSON_GW_AppMain(void)
+void JMSG_UDP_AppMain(void)
 {
 
    uint32 RunStatus = CFE_ES_RunStatus_APP_ERROR;
@@ -105,39 +105,39 @@ void JSON_GW_AppMain(void)
 
    CFE_ES_WriteToSysLog("JSON Gateway App terminating, run status = 0x%08X\n", RunStatus);   /* Use SysLog, events may not be working */
 
-   CFE_EVS_SendEvent(JSON_GW_EXIT_EID, CFE_EVS_EventType_CRITICAL, "JSON Gateway App terminating, run status = 0x%08X", RunStatus);
+   CFE_EVS_SendEvent(JMSG_UDP_EXIT_EID, CFE_EVS_EventType_CRITICAL, "JMSG UDP Gateway App terminating, run status = 0x%08X", RunStatus);
 
    CFE_ES_ExitApp(RunStatus);  /* Let cFE kill the task (and any child tasks) */
 
 
-} /* End of JSON_GW_AppMain() */
+} /* End of JMSG_UDP_AppMain() */
 
 
 
 /******************************************************************************
-** Function: JSON_GW_NoOpCmd
+** Function: JMSG_UDP_NoOpCmd
 **
 */
 
-bool JSON_GW_NoOpCmd(void *ObjDataPtr, const CFE_MSG_Message_t *MsgPtr)
+bool JMSG_UDP_NoOpCmd(void *ObjDataPtr, const CFE_MSG_Message_t *MsgPtr)
 {
 
-   CFE_EVS_SendEvent (JSON_GW_NOOP_EID, CFE_EVS_EventType_INFORMATION,
-                      "No operation command received for JSON Gateway App version %d.%d.%d",
-                      JSON_GW_MAJOR_VER, JSON_GW_MINOR_VER, JSON_GW_PLATFORM_REV);
+   CFE_EVS_SendEvent (JMSG_UDP_NOOP_EID, CFE_EVS_EventType_INFORMATION,
+                      "No operation command received for JMSG UDP Gateway App version %d.%d.%d",
+                      JMSG_UDP_MAJOR_VER, JMSG_UDP_MINOR_VER, JMSG_UDP_PLATFORM_REV);
 
    return true;
 
 
-} /* End JSON_GW_NoOpCmd() */
+} /* End JMSG_UDP_NoOpCmd() */
 
 
 /******************************************************************************
-** Function: JSON_GW_ResetAppCmd
+** Function: JMSG_UDP_ResetAppCmd
 **
 */
 
-bool JSON_GW_ResetAppCmd(void* ObjDataPtr, const CFE_MSG_Message_t *MsgPtr)
+bool JMSG_UDP_ResetAppCmd(void* ObjDataPtr, const CFE_MSG_Message_t *MsgPtr)
 {
 
    CFE_EVS_ResetAllFilters();
@@ -150,7 +150,7 @@ bool JSON_GW_ResetAppCmd(void* ObjDataPtr, const CFE_MSG_Message_t *MsgPtr)
 	  
    return true;
 
-} /* End JSON_GW_ResetAppCmd() */
+} /* End JMSG_UDP_ResetAppCmd() */
 
 
 /******************************************************************************
@@ -169,16 +169,16 @@ static int32 InitApp(void)
    ** Read JSON INI Table & class variable defaults defined in JSON  
    */
 
-   if (INITBL_Constructor(INITBL_OBJ, JSON_GW_INI_FILENAME, &IniCfgEnum))
+   if (INITBL_Constructor(INITBL_OBJ, JMSG_UDP_INI_FILENAME, &IniCfgEnum))
    {
    
-      JsonGw.PerfId = INITBL_GetIntConfig(INITBL_OBJ, CFG_APP_MAIN_PERF_ID);
-      CFE_ES_PerfLogEntry(JsonGw.PerfId);
+      JMsgUdp.PerfId = INITBL_GetIntConfig(INITBL_OBJ, CFG_APP_MAIN_PERF_ID);
+      CFE_ES_PerfLogEntry(JMsgUdp.PerfId);
 
       UDP_COMM_Constructor(UDP_COMM_OBJ, INITBL_OBJ);
 
-      JsonGw.CmdMid        = CFE_SB_ValueToMsgId(INITBL_GetIntConfig(INITBL_OBJ, CFG_JSON_GW_CMD_TOPICID));
-      JsonGw.SendStatusMid = CFE_SB_ValueToMsgId(INITBL_GetIntConfig(INITBL_OBJ, CFG_SEND_STATUS_TLM_TOPICID));
+      JMsgUdp.CmdMid        = CFE_SB_ValueToMsgId(INITBL_GetIntConfig(INITBL_OBJ, CFG_JMSG_UDP_CMD_TOPICID));
+      JMsgUdp.SendStatusMid = CFE_SB_ValueToMsgId(INITBL_GetIntConfig(INITBL_OBJ, CFG_SEND_STATUS_TLM_TOPICID));
    
       /* Child Manager constructor sends error events */
 
@@ -200,22 +200,22 @@ static int32 InitApp(void)
       ** Initialize app level interfaces
       */
  
-      CFE_SB_CreatePipe(&JsonGw.CmdPipe, INITBL_GetIntConfig(INITBL_OBJ, CFG_CMD_PIPE_DEPTH), INITBL_GetStrConfig(INITBL_OBJ, CFG_CMD_PIPE_NAME));  
-      CFE_SB_Subscribe(JsonGw.CmdMid, JsonGw.CmdPipe);
-      CFE_SB_Subscribe(JsonGw.SendStatusMid, JsonGw.CmdPipe);
+      CFE_SB_CreatePipe(&JMsgUdp.CmdPipe, INITBL_GetIntConfig(INITBL_OBJ, CFG_CMD_PIPE_DEPTH), INITBL_GetStrConfig(INITBL_OBJ, CFG_CMD_PIPE_NAME));  
+      CFE_SB_Subscribe(JMsgUdp.CmdMid, JMsgUdp.CmdPipe);
+      CFE_SB_Subscribe(JMsgUdp.SendStatusMid, JMsgUdp.CmdPipe);
 
       CMDMGR_Constructor(CMDMGR_OBJ);
-      CMDMGR_RegisterFunc(CMDMGR_OBJ, JSON_GW_NOOP_CC,   NULL, JSON_GW_NoOpCmd,     0);
-      CMDMGR_RegisterFunc(CMDMGR_OBJ, JSON_GW_RESET_CC,  NULL, JSON_GW_ResetAppCmd, 0);
+      CMDMGR_RegisterFunc(CMDMGR_OBJ, JMSG_UDP_NOOP_CC,   NULL, JMSG_UDP_NoOpCmd,     0);
+      CMDMGR_RegisterFunc(CMDMGR_OBJ, JMSG_UDP_RESET_CC,  NULL, JMSG_UDP_ResetAppCmd, 0);
          
-      CFE_MSG_Init(CFE_MSG_PTR(JsonGw.StatusTlm.TelemetryHeader), CFE_SB_ValueToMsgId(INITBL_GetIntConfig(INITBL_OBJ, CFG_JSON_GW_STATUS_TLM_TOPICID)), sizeof(JSON_GW_StatusTlm_t));
+      CFE_MSG_Init(CFE_MSG_PTR(JMsgUdp.StatusTlm.TelemetryHeader), CFE_SB_ValueToMsgId(INITBL_GetIntConfig(INITBL_OBJ, CFG_JMSG_UDP_STATUS_TLM_TOPICID)), sizeof(JMSG_UDP_StatusTlm_t));
 
       /*
       ** Application startup event message
       */
-      CFE_EVS_SendEvent(JSON_GW_INIT_APP_EID, CFE_EVS_EventType_INFORMATION,
-                        "JSON Gateway App Initialized. Version %d.%d.%d",
-                        JSON_GW_MAJOR_VER, JSON_GW_MINOR_VER, JSON_GW_PLATFORM_REV);
+      CFE_EVS_SendEvent(JMSG_UDP_INIT_APP_EID, CFE_EVS_EventType_INFORMATION,
+                        "JMSG UDP Gateway App Initialized. Version %d.%d.%d",
+                        JMSG_UDP_MAJOR_VER, JMSG_UDP_MINOR_VER, JMSG_UDP_PLATFORM_REV);
                         
    } /* End if INITBL Constructed */
    
@@ -239,9 +239,9 @@ static int32 ProcessCommands(void)
    CFE_SB_MsgId_t   MsgId = CFE_SB_INVALID_MSG_ID;
 
 
-   CFE_ES_PerfLogExit(JsonGw.PerfId);
-   SysStatus = CFE_SB_ReceiveBuffer(&SbBufPtr, JsonGw.CmdPipe, CFE_SB_PEND_FOREVER);
-   CFE_ES_PerfLogEntry(JsonGw.PerfId);
+   CFE_ES_PerfLogExit(JMsgUdp.PerfId);
+   SysStatus = CFE_SB_ReceiveBuffer(&SbBufPtr, JMsgUdp.CmdPipe, CFE_SB_PEND_FOREVER);
+   CFE_ES_PerfLogEntry(JMsgUdp.PerfId);
 
    if (SysStatus == CFE_SUCCESS)
    {
@@ -250,17 +250,17 @@ static int32 ProcessCommands(void)
       if (SysStatus == CFE_SUCCESS)
       {
 
-         if (CFE_SB_MsgId_Equal(MsgId, JsonGw.CmdMid))
+         if (CFE_SB_MsgId_Equal(MsgId, JMsgUdp.CmdMid))
          {
             CMDMGR_DispatchFunc(CMDMGR_OBJ, &SbBufPtr->Msg);
          } 
-         else if (CFE_SB_MsgId_Equal(MsgId, JsonGw.SendStatusMid))
+         else if (CFE_SB_MsgId_Equal(MsgId, JMsgUdp.SendStatusMid))
          {   
             SendStatusPkt();
          }
          else
          {   
-            CFE_EVS_SendEvent(JSON_GW_INVALID_MID_EID, CFE_EVS_EventType_ERROR,
+            CFE_EVS_SendEvent(JMSG_UDP_INVALID_MID_EID, CFE_EVS_EventType_ERROR,
                               "Received invalid command packet, MID = 0x%04X(%d)", 
                               CFE_SB_MsgIdToValue(MsgId), CFE_SB_MsgIdToValue(MsgId));
          }
@@ -287,28 +287,28 @@ static int32 ProcessCommands(void)
 void SendStatusPkt(void)
 {
    
-   JSON_GW_StatusTlm_Payload_t *Payload = &JsonGw.StatusTlm.Payload;
+   JMSG_UDP_StatusTlm_Payload_t *Payload = &JMsgUdp.StatusTlm.Payload;
 
    /*
    ** Framework Data
    */
 
-   Payload->ValidCmdCnt    = JsonGw.CmdMgr.ValidCmdCnt;
-   Payload->InvalidCmdCnt  = JsonGw.CmdMgr.InvalidCmdCnt;
+   Payload->ValidCmdCnt    = JMsgUdp.CmdMgr.ValidCmdCnt;
+   Payload->InvalidCmdCnt  = JMsgUdp.CmdMgr.InvalidCmdCnt;
 
    /*
    ** UDP Comm Data
    */
 
-   Payload->RxUdpConnected = JsonGw.UdpComm.Rx.Connected;
-   Payload->RxUdpMsgCnt    = JsonGw.UdpComm.Rx.MsgCnt;
-   Payload->RxUdpMsgErrCnt = JsonGw.UdpComm.Rx.MsgErrCnt;
+   Payload->RxUdpConnected = JMsgUdp.UdpComm.Rx.Connected;
+   Payload->RxUdpMsgCnt    = JMsgUdp.UdpComm.Rx.MsgCnt;
+   Payload->RxUdpMsgErrCnt = JMsgUdp.UdpComm.Rx.MsgErrCnt;
    
-   Payload->TxUdpConnected = JsonGw.UdpComm.Tx.Connected;
-   Payload->TxUdpMsgCnt    = JsonGw.UdpComm.Tx.MsgCnt;
-   Payload->TxUdpMsgErrCnt = JsonGw.UdpComm.Tx.MsgErrCnt;
+   Payload->TxUdpConnected = JMsgUdp.UdpComm.Tx.Connected;
+   Payload->TxUdpMsgCnt    = JMsgUdp.UdpComm.Tx.MsgCnt;
+   Payload->TxUdpMsgErrCnt = JMsgUdp.UdpComm.Tx.MsgErrCnt;
 
-   CFE_SB_TimeStampMsg(CFE_MSG_PTR(JsonGw.StatusTlm.TelemetryHeader));
-   CFE_SB_TransmitMsg(CFE_MSG_PTR(JsonGw.StatusTlm.TelemetryHeader), true);
+   CFE_SB_TimeStampMsg(CFE_MSG_PTR(JMsgUdp.StatusTlm.TelemetryHeader));
+   CFE_SB_TransmitMsg(CFE_MSG_PTR(JMsgUdp.StatusTlm.TelemetryHeader), true);
 
 } /* End SendStatusPkt() */

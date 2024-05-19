@@ -87,19 +87,19 @@ void UDP_COMM_Constructor(UDP_COMM_Class_t *UdpCommPtr, const INITBL_Class_t *In
       {
          UdpComm->Rx.Connected = true;
          CFE_EVS_SendEvent(UDP_COMM_CONSTRUCTOR_EID, CFE_EVS_EventType_INFORMATION, 
-                           "JSON_GW listening on UDP port %u", (unsigned int)RxPort);
+                           "JMSG UDP Gateway listening on UDP port %u", (unsigned int)RxPort);
       }
       else
       {
          CFE_EVS_SendEvent(UDP_COMM_CONSTRUCTOR_EID, CFE_EVS_EventType_ERROR, 
-                           "Error binding JSON_GW Rx socket, status = %d", (int)Status);
+                           "Error binding JMSG UDP Gateway Rx socket, status = %d", (int)Status);
       }
         
    } /* Socket opened */
    else
    {
       CFE_EVS_SendEvent(UDP_COMM_CONSTRUCTOR_EID, CFE_EVS_EventType_ERROR, 
-                        "Error creating JSON_GW Rx socket, status = %d", (int)Status);
+                        "Error creating JMSG UDP Gateway Rx socket, status = %d", (int)Status);
    }
 
    /* TODO: Add Tx logic
@@ -129,13 +129,13 @@ bool UDP_COMM_RxChildTask(CHILDMGR_Class_t *ChildMgr)
       {
          UdpComm->Rx.MsgCnt++;
          CFE_EVS_SendEvent(UDP_COMM_RX_CHILD_TASK_EID, CFE_EVS_EventType_INFORMATION, 
-                           "JSON_GW Rx received message: %s", UdpComm->Rx.Buffer);
+                           "JMSG UDP Gateway Rx received message: %s", UdpComm->Rx.Buffer);
       }
       else
       {
          UdpComm->Rx.MsgErrCnt++;
          CFE_EVS_SendEvent(UDP_COMM_RX_CHILD_TASK_EID, CFE_EVS_EventType_ERROR, 
-                           "JSON GW Rx socket receive error, Status = %u", (unsigned int)Status);
+                           "JMSG UDP Gateway Rx socket receive error, Status = %u", (unsigned int)Status);
       }
       
    } /* End if connected */

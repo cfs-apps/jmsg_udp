@@ -13,14 +13,14 @@
 ** GNU Affero General Public License for more details.
 **
 ** Purpose:
-**   Define configurations for the JSON Gateway application
+**   Define configurations for the JMSG UDP Gateway application
 **
 ** Notes:
 **   None
 **
 */
-#ifndef _json_gw_mission_cfg_
-#define _json_gw_mission_cfg_
+#ifndef _jmsg_udp_mission_cfg_
+#define _jmsg_udp_mission_cfg_
 
 
-#endif /* _json_gw_mission_cfg_ */
+#endif /* _jmsg_udp_mission_cfg_ */
