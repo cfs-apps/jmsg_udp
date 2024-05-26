@@ -9,12 +9,17 @@
       "APP_CFE_NAME":     "JMSG_UDP",      
       "APP_MAIN_PERF_ID": 91,
       
-      "JMSG_UDP_CMD_TOPICID" : 6250,
-      "BC_SCH_2_SEC_TOPICID": 6227,
-      "JMSG_UDP_STATUS_TLM_TOPICID": 2168,
+      "JMSG_LIB_CMD_TOPICID" : 0,
+      "JMSG_UDP_CMD_TOPICID" : 0,
+      "JMSG_UDP_STATUS_TLM_TOPICID": 0,
+      "JMSG_TEST_PLUGIN_TOPICID": 0,
+      "BC_SCH_2_SEC_TOPICID": 0,
             
       "CMD_PIPE_NAME":  "JMSG_UDP_CMD_PIPE",
       "CMD_PIPE_DEPTH": 5,
+
+      "JMSG_PIPE_NAME":  "JMSG_UDP_JMSG_PIPE",
+      "JMSG_PIPE_DEPTH": 10,
 
       "RX_UDP_PORT":         8888,
       "RX_CHILD_NAME":       "JMSG_UDP_RX",
@@ -30,7 +35,7 @@
       "TX_SB_PIPE_NAME":     "JMSG_UDP_TOPIC_PIPE",
       "TX_SB_PIPE_DEPTH":    10,
       
-      "JMSG_TOPIC_TBL_FILE": "/cf/jmsg_lib_topics.json"
+      "JMSG_TOPIC_TBL_FILE": "/cf/jmsg_topics.json"
    
    }
 }

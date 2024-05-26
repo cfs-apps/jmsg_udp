@@ -26,9 +26,16 @@ import threading
 import time
 
 def tx_thread():
+    
+    for i in range(1,5):
+        jmsg = 'basecamp/test:{"int32": %i,"float": %f}' % (i, float(i)*1.3)
+        print(f'>>> Sending message {jmsg}')
+        sock.sendto(jmsg.encode('ASCII'), (cfs_ip_addr, cfs_app_port))
+        time.sleep(2)
+
+def rx_thread():
     time.sleep(2)
-    print('send_msg()')
-    sock.sendto(b'Hello', (cfs_ip_addr, cfs_app_port))
+
     
 if __name__ == "__main__":
 

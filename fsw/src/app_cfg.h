@@ -44,8 +44,8 @@
 ** 0.9 - Prototype
 */
 
-#define  JMSG_UDP_MAJOR_VER      0
-#define  JMSG_UDP_MINOR_VER      9
+#define  JMSG_UDP_APP_MAJOR_VER      0
+#define  JMSG_UDP_APP_MINOR_VER      9
 
 
 /******************************************************************************
@@ -70,12 +70,17 @@
 #define CFG_APP_CFE_NAME       APP_CFE_NAME
 #define CFG_APP_MAIN_PERF_ID   APP_MAIN_PERF_ID
 
+#define CFG_JMSG_LIB_CMD_TOPICID         JMSG_LIB_CMD_TOPICID
 #define CFG_JMSG_UDP_CMD_TOPICID         JMSG_UDP_CMD_TOPICID
-#define CFG_SEND_STATUS_TLM_TOPICID      BC_SCH_2_SEC_TOPICID
 #define CFG_JMSG_UDP_STATUS_TLM_TOPICID  JMSG_UDP_STATUS_TLM_TOPICID
-
+#define CFG_JMSG_TEST_PLUGIN_TOPICID     JMSG_TEST_PLUGIN_TOPICID
+#define CFG_SEND_STATUS_TLM_TOPICID      BC_SCH_2_SEC_TOPICID
+      
 #define CFG_CMD_PIPE_NAME   CMD_PIPE_NAME
 #define CFG_CMD_PIPE_DEPTH  CMD_PIPE_DEPTH
+
+#define CFG_JMSG_PIPE_NAME  JMSG_PIPE_NAME
+#define CFG_JMSG_PIPE_DEPTH JMSG_PIPE_DEPTH
 
 #define CFG_RX_UDP_PORT          RX_UDP_PORT
 #define CFG_RX_CHILD_NAME        RX_CHILD_NAME
@@ -97,11 +102,15 @@
 #define APP_CONFIG(XX) \
    XX(APP_CFE_NAME,char*) \
    XX(APP_MAIN_PERF_ID,uint32) \
+   XX(JMSG_LIB_CMD_TOPICID,uint32) \
    XX(JMSG_UDP_CMD_TOPICID,uint32) \
-   XX(BC_SCH_2_SEC_TOPICID,uint32) \
    XX(JMSG_UDP_STATUS_TLM_TOPICID,uint32) \
+   XX(JMSG_TEST_PLUGIN_TOPICID,uint32) \
+   XX(BC_SCH_2_SEC_TOPICID,uint32) \
    XX(CMD_PIPE_NAME,char*) \
    XX(CMD_PIPE_DEPTH,uint32) \
+   XX(JMSG_PIPE_NAME,char*) \
+   XX(JMSG_PIPE_DEPTH,uint32) \
    XX(RX_UDP_PORT,uint32) \
    XX(RX_CHILD_NAME,char*) \
    XX(RX_CHILD_STACK_SIZE,uint32) \
@@ -127,16 +136,20 @@ DECLARE_ENUM(Config,APP_CONFIG)
 ** exceeded so it is the developer's responsibility to verify the ranges. 
 */
 
-#define JMSG_UDP_BASE_EID   (APP_C_FW_APP_BASE_EID +  0)
-#define UDP_COMM_BASE_EID   (APP_C_FW_APP_BASE_EID + 20)
+#define JMSG_UDP_APP_BASE_EID  (APP_C_FW_APP_BASE_EID +  0)
+#define JMSG_UDP_BASE_EID      (APP_C_FW_APP_BASE_EID + 20)
+#define JMSG_TRANS_BASE_EID    (APP_C_FW_APP_BASE_EID + 30)
+
 // Topic plugin macros are defined in jmsg_lib/eds/jmsg_usr.xml
 
 
 /******************************************************************************
-** UDP_COMM
+** JMSG_UDP
 **
 */
 
-#define UDP_COMM_BUF_LEN   4096  /* Must accomodate Rx and Tx maximum message length */
+#define JMSG_UDP_READ_BUF_LEN   4096  /* Must accomodate Rx and Tx maximum message length */
+
+
 
 #endif /* _app_cfg_ */

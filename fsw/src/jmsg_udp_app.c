@@ -27,17 +27,19 @@
 #include <string.h>
 #include "jmsg_udp_app.h"
 #include "jmsg_udp_eds_cc.h"
+#include "jmsg_lib_eds_cc.h"
 
 /***********************/
 /** Macro Definitions **/
 /***********************/
 
 /* Convenience macros */
-#define  INITBL_OBJ      (&(JMsgUdp.IniTbl))
-#define  CMDMGR_OBJ      (&(JMsgUdp.CmdMgr))
-#define  RX_CHILDMGR_OBJ (&(JMsgUdp.RxChildMgr))
-#define  TX_CHILDMGR_OBJ (&(JMsgUdp.TxChildMgr))
-#define  UDP_COMM_OBJ    (&(JMsgUdp.UdpComm))
+#define  INITBL_OBJ      (&(JMsgUdpApp.IniTbl))
+#define  CMDMGR_OBJ      (&(JMsgUdpApp.CmdMgr))
+#define  TBLMGR_OBJ      (&(JMsgUdpApp.TblMgr))  
+#define  RX_CHILDMGR_OBJ (&(JMsgUdpApp.RxChildMgr))
+#define  TX_CHILDMGR_OBJ (&(JMsgUdpApp.TxChildMgr))
+#define  JMSG_UDP_OBJ    (&(JMsgUdpApp.JMsgUdp))
 
 /*******************************/
 /** Local Function Prototypes **/
@@ -61,14 +63,14 @@ DEFINE_ENUM(Config,APP_CONFIG)
 static CFE_EVS_BinFilter_t  EventFilters[] =
 {  
    /* Event ID                           Mask */
-   {UDP_COMM_RX_CHILD_TASK_EID, CFE_EVS_NO_FILTER}
+   {JMSG_UDP_RX_CHILD_TASK_EID, CFE_EVS_NO_FILTER}
 };
 
 /*****************/
 /** Global Data **/
 /*****************/
 
-JMSG_UDP_Class_t   JMsgUdp;
+JMSG_UDP_APP_Class_t   JMsgUdpApp;
 
 
 /******************************************************************************
@@ -103,9 +105,9 @@ void JMSG_UDP_AppMain(void)
       
    } /* End CFE_ES_RunLoop */
 
-   CFE_ES_WriteToSysLog("JSON Gateway App terminating, run status = 0x%08X\n", RunStatus);   /* Use SysLog, events may not be working */
+   CFE_ES_WriteToSysLog("JMSG UDP Gateway App terminating, run status = 0x%08X\n", RunStatus);   /* Use SysLog, events may not be working */
 
-   CFE_EVS_SendEvent(JMSG_UDP_EXIT_EID, CFE_EVS_EventType_CRITICAL, "JMSG UDP Gateway App terminating, run status = 0x%08X", RunStatus);
+   CFE_EVS_SendEvent(JMSG_UDP_APP_EXIT_EID, CFE_EVS_EventType_CRITICAL, "JMSG UDP Gateway App terminating, run status = 0x%08X", RunStatus);
 
    CFE_ES_ExitApp(RunStatus);  /* Let cFE kill the task (and any child tasks) */
 
@@ -115,29 +117,29 @@ void JMSG_UDP_AppMain(void)
 
 
 /******************************************************************************
-** Function: JMSG_UDP_NoOpCmd
+** Function: JMSG_UDP_APP_NoOpCmd
 **
 */
 
-bool JMSG_UDP_NoOpCmd(void *ObjDataPtr, const CFE_MSG_Message_t *MsgPtr)
+bool JMSG_UDP_APP_NoOpCmd(void *ObjDataPtr, const CFE_MSG_Message_t *MsgPtr)
 {
 
-   CFE_EVS_SendEvent (JMSG_UDP_NOOP_EID, CFE_EVS_EventType_INFORMATION,
+   CFE_EVS_SendEvent (JMSG_UDP_APP_NOOP_EID, CFE_EVS_EventType_INFORMATION,
                       "No operation command received for JMSG UDP Gateway App version %d.%d.%d",
-                      JMSG_UDP_MAJOR_VER, JMSG_UDP_MINOR_VER, JMSG_UDP_PLATFORM_REV);
+                      JMSG_UDP_APP_MAJOR_VER, JMSG_UDP_APP_MINOR_VER, JMSG_UDP_APP_PLATFORM_REV);
 
    return true;
 
 
-} /* End JMSG_UDP_NoOpCmd() */
+} /* End JMSG_UDP_APP_NoOpCmd() */
 
 
 /******************************************************************************
-** Function: JMSG_UDP_ResetAppCmd
+** Function: JMSG_UDP_APP_ResetAppCmd
 **
 */
 
-bool JMSG_UDP_ResetAppCmd(void* ObjDataPtr, const CFE_MSG_Message_t *MsgPtr)
+bool JMSG_UDP_APP_ResetAppCmd(void* ObjDataPtr, const CFE_MSG_Message_t *MsgPtr)
 {
 
    CFE_EVS_ResetAllFilters();
@@ -146,11 +148,11 @@ bool JMSG_UDP_ResetAppCmd(void* ObjDataPtr, const CFE_MSG_Message_t *MsgPtr)
    CHILDMGR_ResetStatus(RX_CHILDMGR_OBJ);
    CHILDMGR_ResetStatus(TX_CHILDMGR_OBJ);
    
-   UDP_COMM_ResetStatus();
+   JMSG_UDP_ResetStatus();
 	  
    return true;
 
-} /* End JMSG_UDP_ResetAppCmd() */
+} /* End JMSG_UDP_APP_ResetAppCmd() */
 
 
 /******************************************************************************
@@ -169,16 +171,19 @@ static int32 InitApp(void)
    ** Read JSON INI Table & class variable defaults defined in JSON  
    */
 
-   if (INITBL_Constructor(INITBL_OBJ, JMSG_UDP_INI_FILENAME, &IniCfgEnum))
+   if (INITBL_Constructor(INITBL_OBJ, JMSG_UDP_APP_INI_FILENAME, &IniCfgEnum))
    {
    
-      JMsgUdp.PerfId = INITBL_GetIntConfig(INITBL_OBJ, CFG_APP_MAIN_PERF_ID);
-      CFE_ES_PerfLogEntry(JMsgUdp.PerfId);
+      JMsgUdpApp.PerfId = INITBL_GetIntConfig(INITBL_OBJ, CFG_APP_MAIN_PERF_ID);
+      CFE_ES_PerfLogEntry(JMsgUdpApp.PerfId);
 
-      UDP_COMM_Constructor(UDP_COMM_OBJ, INITBL_OBJ);
+      /* Must construct table manager prior to table objects */
+      TBLMGR_Constructor(TBLMGR_OBJ, INITBL_GetStrConfig(INITBL_OBJ, CFG_APP_CFE_NAME));
+      JMSG_UDP_Constructor(JMSG_UDP_OBJ, INITBL_OBJ, TBLMGR_OBJ);
 
-      JMsgUdp.CmdMid        = CFE_SB_ValueToMsgId(INITBL_GetIntConfig(INITBL_OBJ, CFG_JMSG_UDP_CMD_TOPICID));
-      JMsgUdp.SendStatusMid = CFE_SB_ValueToMsgId(INITBL_GetIntConfig(INITBL_OBJ, CFG_SEND_STATUS_TLM_TOPICID));
+      JMsgUdpApp.JMsgLibMid    = CFE_SB_ValueToMsgId(INITBL_GetIntConfig(INITBL_OBJ, CFG_JMSG_LIB_CMD_TOPICID));
+      JMsgUdpApp.CmdMid        = CFE_SB_ValueToMsgId(INITBL_GetIntConfig(INITBL_OBJ, CFG_JMSG_UDP_CMD_TOPICID));
+      JMsgUdpApp.SendStatusMid = CFE_SB_ValueToMsgId(INITBL_GetIntConfig(INITBL_OBJ, CFG_SEND_STATUS_TLM_TOPICID));
    
       /* Child Manager constructor sends error events */
 
@@ -187,35 +192,47 @@ static int32 InitApp(void)
       ChildTaskInit.Priority  = INITBL_GetIntConfig(INITBL_OBJ, CFG_RX_CHILD_PRIORITY);
       ChildTaskInit.PerfId    = INITBL_GetIntConfig(INITBL_OBJ, CFG_RX_CHILD_PERF_ID);
       RetStatus = CHILDMGR_Constructor(RX_CHILDMGR_OBJ, ChildMgr_TaskMainCallback,
-                                       UDP_COMM_RxChildTask, &ChildTaskInit); 
+                                       JMSG_UDP_RxChildTask, &ChildTaskInit); 
 
       ChildTaskInit.TaskName  = INITBL_GetStrConfig(INITBL_OBJ, CFG_TX_CHILD_NAME);
       ChildTaskInit.StackSize = INITBL_GetIntConfig(INITBL_OBJ, CFG_TX_CHILD_STACK_SIZE);
       ChildTaskInit.Priority  = INITBL_GetIntConfig(INITBL_OBJ, CFG_TX_CHILD_PRIORITY);
       ChildTaskInit.PerfId    = INITBL_GetIntConfig(INITBL_OBJ, CFG_TX_CHILD_PERF_ID);
       RetStatus = CHILDMGR_Constructor(TX_CHILDMGR_OBJ, ChildMgr_TaskMainCallback,
-                                       UDP_COMM_TxChildTask, &ChildTaskInit); 
+                                       JMSG_UDP_TxChildTask, &ChildTaskInit); 
       
       /*
       ** Initialize app level interfaces
       */
  
-      CFE_SB_CreatePipe(&JMsgUdp.CmdPipe, INITBL_GetIntConfig(INITBL_OBJ, CFG_CMD_PIPE_DEPTH), INITBL_GetStrConfig(INITBL_OBJ, CFG_CMD_PIPE_NAME));  
-      CFE_SB_Subscribe(JMsgUdp.CmdMid, JMsgUdp.CmdPipe);
-      CFE_SB_Subscribe(JMsgUdp.SendStatusMid, JMsgUdp.CmdPipe);
+      CFE_SB_CreatePipe(&JMsgUdpApp.CmdPipe, INITBL_GetIntConfig(INITBL_OBJ, CFG_CMD_PIPE_DEPTH), INITBL_GetStrConfig(INITBL_OBJ, CFG_CMD_PIPE_NAME));  
+      CFE_SB_Subscribe(JMsgUdpApp.JMsgLibMid, JMsgUdpApp.CmdPipe);
+      CFE_SB_Subscribe(JMsgUdpApp.CmdMid, JMsgUdpApp.CmdPipe);
+      CFE_SB_Subscribe(JMsgUdpApp.SendStatusMid, JMsgUdpApp.CmdPipe);
 
       CMDMGR_Constructor(CMDMGR_OBJ);
-      CMDMGR_RegisterFunc(CMDMGR_OBJ, JMSG_UDP_NOOP_CC,   NULL, JMSG_UDP_NoOpCmd,     0);
-      CMDMGR_RegisterFunc(CMDMGR_OBJ, JMSG_UDP_RESET_CC,  NULL, JMSG_UDP_ResetAppCmd, 0);
+      CMDMGR_RegisterFunc(CMDMGR_OBJ, JMSG_UDP_NOOP_CC,  NULL, JMSG_UDP_APP_NoOpCmd,     0);
+      CMDMGR_RegisterFunc(CMDMGR_OBJ, JMSG_UDP_RESET_CC, NULL, JMSG_UDP_APP_ResetAppCmd, 0);
+
+      CMDMGR_RegisterFunc(CMDMGR_OBJ, JMSG_UDP_LOAD_TBL_CC, TBLMGR_OBJ, TBLMGR_LoadTblCmd, sizeof(JMSG_UDP_LoadTbl_CmdPayload_t));
+      CMDMGR_RegisterFunc(CMDMGR_OBJ, JMSG_UDP_DUMP_TBL_CC, TBLMGR_OBJ, TBLMGR_DumpTblCmd, sizeof(JMSG_UDP_DumpTbl_CmdPayload_t));
+ 
+      CMDMGR_RegisterFunc(CMDMGR_OBJ, JMSG_LIB_CONFIG_TOPIC_PLUGIN_CC,    NULL, JMSG_TOPIC_TBL_ConfigTopicPluginCmd,     sizeof(JMSG_LIB_ConfigTopicPlugin_CmdPayload_t));
+      CMDMGR_RegisterFunc(CMDMGR_OBJ, JMSG_LIB_SEND_TOPIC_PLUGIN_TLM_CC,  NULL, JMSG_TOPIC_TBL_SendTopicTPluginTlmCmd,   0);
+      CMDMGR_RegisterFunc(CMDMGR_OBJ, JMSG_LIB_CONFIG_SB_TOPIC_TEST_CC,   NULL, JMSG_TOPIC_TBL_ConfigSbTopicTestCmd,     sizeof(JMSG_LIB_ConfigSbTopicTest_CmdPayload_t));
+
+      CMDMGR_RegisterFunc(CMDMGR_OBJ, JMSG_UDP_START_TEST_CC, NULL, JMSG_UDP_StartTestCmd, 0);
+      CMDMGR_RegisterFunc(CMDMGR_OBJ, JMSG_UDP_STOP_TEST_CC,  NULL, JMSG_UDP_StopTestCmd, 0);
+
          
-      CFE_MSG_Init(CFE_MSG_PTR(JMsgUdp.StatusTlm.TelemetryHeader), CFE_SB_ValueToMsgId(INITBL_GetIntConfig(INITBL_OBJ, CFG_JMSG_UDP_STATUS_TLM_TOPICID)), sizeof(JMSG_UDP_StatusTlm_t));
+      CFE_MSG_Init(CFE_MSG_PTR(JMsgUdpApp.StatusTlm.TelemetryHeader), CFE_SB_ValueToMsgId(INITBL_GetIntConfig(INITBL_OBJ, CFG_JMSG_UDP_STATUS_TLM_TOPICID)), sizeof(JMSG_UDP_StatusTlm_t));
 
       /*
       ** Application startup event message
       */
-      CFE_EVS_SendEvent(JMSG_UDP_INIT_APP_EID, CFE_EVS_EventType_INFORMATION,
+      CFE_EVS_SendEvent(JMSG_UDP_APP_INIT_APP_EID, CFE_EVS_EventType_INFORMATION,
                         "JMSG UDP Gateway App Initialized. Version %d.%d.%d",
-                        JMSG_UDP_MAJOR_VER, JMSG_UDP_MINOR_VER, JMSG_UDP_PLATFORM_REV);
+                        JMSG_UDP_APP_MAJOR_VER, JMSG_UDP_APP_MINOR_VER, JMSG_UDP_APP_PLATFORM_REV);
                         
    } /* End if INITBL Constructed */
    
@@ -239,9 +256,9 @@ static int32 ProcessCommands(void)
    CFE_SB_MsgId_t   MsgId = CFE_SB_INVALID_MSG_ID;
 
 
-   CFE_ES_PerfLogExit(JMsgUdp.PerfId);
-   SysStatus = CFE_SB_ReceiveBuffer(&SbBufPtr, JMsgUdp.CmdPipe, CFE_SB_PEND_FOREVER);
-   CFE_ES_PerfLogEntry(JMsgUdp.PerfId);
+   CFE_ES_PerfLogExit(JMsgUdpApp.PerfId);
+   SysStatus = CFE_SB_ReceiveBuffer(&SbBufPtr, JMsgUdpApp.CmdPipe, CFE_SB_PEND_FOREVER);
+   CFE_ES_PerfLogEntry(JMsgUdpApp.PerfId);
 
    if (SysStatus == CFE_SUCCESS)
    {
@@ -250,17 +267,17 @@ static int32 ProcessCommands(void)
       if (SysStatus == CFE_SUCCESS)
       {
 
-         if (CFE_SB_MsgId_Equal(MsgId, JMsgUdp.CmdMid))
+         if (CFE_SB_MsgId_Equal(MsgId, JMsgUdpApp.JMsgLibMid) || CFE_SB_MsgId_Equal(MsgId, JMsgUdpApp.CmdMid))
          {
             CMDMGR_DispatchFunc(CMDMGR_OBJ, &SbBufPtr->Msg);
          } 
-         else if (CFE_SB_MsgId_Equal(MsgId, JMsgUdp.SendStatusMid))
+         else if (CFE_SB_MsgId_Equal(MsgId, JMsgUdpApp.SendStatusMid))
          {   
             SendStatusPkt();
          }
          else
          {   
-            CFE_EVS_SendEvent(JMSG_UDP_INVALID_MID_EID, CFE_EVS_EventType_ERROR,
+            CFE_EVS_SendEvent(JMSG_UDP_APP_INVALID_MID_EID, CFE_EVS_EventType_ERROR,
                               "Received invalid command packet, MID = 0x%04X(%d)", 
                               CFE_SB_MsgIdToValue(MsgId), CFE_SB_MsgIdToValue(MsgId));
          }
@@ -287,28 +304,28 @@ static int32 ProcessCommands(void)
 void SendStatusPkt(void)
 {
    
-   JMSG_UDP_StatusTlm_Payload_t *Payload = &JMsgUdp.StatusTlm.Payload;
+   JMSG_UDP_StatusTlm_Payload_t *Payload = &JMsgUdpApp.StatusTlm.Payload;
 
    /*
    ** Framework Data
    */
 
-   Payload->ValidCmdCnt    = JMsgUdp.CmdMgr.ValidCmdCnt;
-   Payload->InvalidCmdCnt  = JMsgUdp.CmdMgr.InvalidCmdCnt;
+   Payload->ValidCmdCnt    = JMsgUdpApp.CmdMgr.ValidCmdCnt;
+   Payload->InvalidCmdCnt  = JMsgUdpApp.CmdMgr.InvalidCmdCnt;
 
    /*
-   ** UDP Comm Data
+   ** UDP Manager Data
    */
 
-   Payload->RxUdpConnected = JMsgUdp.UdpComm.Rx.Connected;
-   Payload->RxUdpMsgCnt    = JMsgUdp.UdpComm.Rx.MsgCnt;
-   Payload->RxUdpMsgErrCnt = JMsgUdp.UdpComm.Rx.MsgErrCnt;
+   Payload->RxUdpConnected = JMsgUdpApp.JMsgUdp.Rx.Connected;
+   Payload->RxUdpMsgCnt    = JMsgUdpApp.JMsgUdp.Rx.MsgCnt;
+   Payload->RxUdpMsgErrCnt = JMsgUdpApp.JMsgUdp.Rx.MsgErrCnt;
    
-   Payload->TxUdpConnected = JMsgUdp.UdpComm.Tx.Connected;
-   Payload->TxUdpMsgCnt    = JMsgUdp.UdpComm.Tx.MsgCnt;
-   Payload->TxUdpMsgErrCnt = JMsgUdp.UdpComm.Tx.MsgErrCnt;
+   Payload->TxUdpConnected = JMsgUdpApp.JMsgUdp.Tx.Connected;
+   Payload->TxUdpMsgCnt    = JMsgUdpApp.JMsgUdp.Tx.MsgCnt;
+   Payload->TxUdpMsgErrCnt = JMsgUdpApp.JMsgUdp.Tx.MsgErrCnt;
 
-   CFE_SB_TimeStampMsg(CFE_MSG_PTR(JMsgUdp.StatusTlm.TelemetryHeader));
-   CFE_SB_TransmitMsg(CFE_MSG_PTR(JMsgUdp.StatusTlm.TelemetryHeader), true);
+   CFE_SB_TimeStampMsg(CFE_MSG_PTR(JMsgUdpApp.StatusTlm.TelemetryHeader));
+   CFE_SB_TransmitMsg(CFE_MSG_PTR(JMsgUdpApp.StatusTlm.TelemetryHeader), true);
 
 } /* End SendStatusPkt() */

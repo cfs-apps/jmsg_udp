@@ -32,7 +32,7 @@
 */
 
 #include "app_cfg.h"
-#include "udp_comm.h"
+#include "jmsg_udp.h"
 
 /***********************/
 /** Macro Definitions **/
@@ -42,10 +42,10 @@
 ** Events
 */
 
-#define JMSG_UDP_INIT_APP_EID      (JMSG_UDP_BASE_EID + 0)
-#define JMSG_UDP_NOOP_EID          (JMSG_UDP_BASE_EID + 1)
-#define JMSG_UDP_EXIT_EID          (JMSG_UDP_BASE_EID + 2)
-#define JMSG_UDP_INVALID_MID_EID   (JMSG_UDP_BASE_EID + 3)
+#define JMSG_UDP_APP_INIT_APP_EID      (JMSG_UDP_APP_BASE_EID + 0)
+#define JMSG_UDP_APP_NOOP_EID          (JMSG_UDP_APP_BASE_EID + 1)
+#define JMSG_UDP_APP_EXIT_EID          (JMSG_UDP_APP_BASE_EID + 2)
+#define JMSG_UDP_APP_INVALID_MID_EID   (JMSG_UDP_APP_BASE_EID + 3)
 
 
 /**********************/
@@ -64,7 +64,7 @@
 /* See EDS */
 
 /******************************************************************************
-** JSON_Class
+** App Class
 */
 typedef struct 
 {
@@ -76,6 +76,7 @@ typedef struct
    INITBL_Class_t    IniTbl; 
    CFE_SB_PipeId_t   CmdPipe;
    CMDMGR_Class_t    CmdMgr;
+   TBLMGR_Class_t    TblMgr; 
    CHILDMGR_Class_t  RxChildMgr;
    CHILDMGR_Class_t  TxChildMgr;
       
@@ -92,19 +93,20 @@ typedef struct
    
    uint32 PerfId;
    
+   CFE_SB_MsgId_t  JMsgLibMid;
    CFE_SB_MsgId_t  CmdMid;
    CFE_SB_MsgId_t  SendStatusMid;
        
-   UDP_COMM_Class_t  UdpComm;
+   JMSG_UDP_Class_t JMsgUdp;
 
-} JMSG_UDP_Class_t;
+} JMSG_UDP_APP_Class_t;
 
 
 /*******************/
 /** Exported Data **/
 /*******************/
 
-extern JMSG_UDP_Class_t  JMsgUdp;
+extern JMSG_UDP_APP_Class_t  JMsgUdpApp;
 
 
 /************************/

@@ -33,8 +33,8 @@
 ** Platform Deployment Configurations
 */
 
-#define JMSG_UDP_PLATFORM_REV   0
-#define JMSG_UDP_INI_FILENAME   "/cf/jmsg_udp_ini.json"
+#define JMSG_UDP_APP_PLATFORM_REV   0
+#define JMSG_UDP_APP_INI_FILENAME   "/cf/jmsg_udp_ini.json"
 
 
 #endif /* _jmsg_udp_platform_cfg_ */

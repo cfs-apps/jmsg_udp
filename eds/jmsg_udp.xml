@@ -33,11 +33,33 @@
       <!--**** DataTypeSet:  Entry Types ****-->
       <!--***********************************-->
 
+      <EnumeratedDataType name="TblId" shortDescription="Table Identifiers. See app_c_fw.xml guidelines" >
+        <IntegerDataEncoding sizeInBits="16" encoding="unsigned" />
+        <EnumerationList>
+          <Enumeration label="JMSG_TOPIC" value="0" shortDescription="JSON Message topics" />
+        </EnumerationList>
+      </EnumeratedDataType>
             
       <!--***************************************-->
       <!--**** DataTypeSet: Command Payloads ****-->
       <!--***************************************-->
 
+      <ContainerDataType name="LoadTbl_CmdPayload" shortDescription="Load an app's JSON table">
+        <EntryList>
+          <Entry name="Id"       type="TblId"                   shortDescription="Table identifier" />
+          <Entry name="Type"     type="APP_C_FW/TblLoadOptions" shortDescription="Replace entire table or perform sparse entry updates" />
+          <Entry name="Filename" type="BASE_TYPES/PathName"     shortDescription="Full path and file name of table to be loaded" />
+       </EntryList>
+      </ContainerDataType>
+      
+      <ContainerDataType name="DumpTbl_CmdPayload" shortDescription="Dump an app's JSON table">
+        <EntryList>
+          <Entry name="Id"       type="TblId"               shortDescription="Table identifier" />
+          <Entry name="Filename" type="BASE_TYPES/PathName" shortDescription="Full path and file name of table to be dumped" />
+       </EntryList>
+      </ContainerDataType>
+
+      
       <!--*****************************************-->
       <!--**** DataTypeSet: Telemetry Payloads ****-->
       <!--*****************************************-->
@@ -74,6 +96,36 @@
           <ValueConstraint entry="Sec.FunctionCode" value="${APP_C_FW/RESET_CC}" />
         </ConstraintSet>
       </ContainerDataType>
+
+      <ContainerDataType name="LoadTbl" baseType="CommandBase">
+        <ConstraintSet>
+          <ValueConstraint entry="Sec.FunctionCode" value="${APP_C_FW/LOAD_TBL_CC}" />
+        </ConstraintSet>
+        <EntryList>
+          <Entry type="LoadTbl_CmdPayload" name="Payload" />
+        </EntryList>
+      </ContainerDataType>
+
+      <ContainerDataType name="DumpTbl" baseType="CommandBase">
+        <ConstraintSet>
+          <ValueConstraint entry="Sec.FunctionCode" value="${APP_C_FW/DUMP_TBL_CC}" />
+        </ConstraintSet>
+        <EntryList>
+          <Entry type="DumpTbl_CmdPayload" name="Payload" />
+        </EntryList>
+      </ContainerDataType>
+
+      <ContainerDataType name="StartTest" baseType="CommandBase" shortDescription="Start built-in test">
+        <ConstraintSet>
+          <ValueConstraint entry="Sec.FunctionCode" value="${APP_C_FW/APP_BASE_CC} + 0" />
+        </ConstraintSet>
+      </ContainerDataType>      
+
+      <ContainerDataType name="StopTest" baseType="CommandBase" shortDescription="Start built-in test">
+        <ConstraintSet>
+          <ValueConstraint entry="Sec.FunctionCode" value="${APP_C_FW/APP_BASE_CC} + 1" />
+        </ConstraintSet>
+      </ContainerDataType>      
 
       <!--****************************************-->
       <!--**** DataTypeSet: Telemetry Packets ****-->
@@ -116,11 +168,11 @@
 
         <Implementation>
           <VariableSet>
-            <Variable type="BASE_TYPES/uint16" readOnly="true" name="CmdTopicId"        initialValue="${CFE_MISSION/JSON_GW_CMD_TOPICID}" />
-            <Variable type="BASE_TYPES/uint16" readOnly="true" name="StatusTlmTopicId"  initialValue="${CFE_MISSION/JSON_GW_STATUS_TLM_TOPICID}" />
+            <Variable type="BASE_TYPES/uint16" readOnly="true" name="CmdTopicId"        initialValue="${CFE_MISSION/JMSG_UDP_CMD_TOPICID}" />
+            <Variable type="BASE_TYPES/uint16" readOnly="true" name="StatusTlmTopicId"  initialValue="${CFE_MISSION/JMSG_UDP_STATUS_TLM_TOPICID}" />
           </VariableSet>
           <!-- Assign fixed numbers to the "TopicId" parameter of each interface -->
-          <ParameterMapSet>          
+          <ParameterMapSet>
             <ParameterMap interface="CMD"         parameter="TopicId" variableRef="CmdTopicId" />
             <ParameterMap interface="STATUS_TLM"  parameter="TopicId" variableRef="StatusTlmTopicId" />
           </ParameterMapSet>
