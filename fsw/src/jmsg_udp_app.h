@@ -93,7 +93,7 @@ typedef struct
    
    uint32 PerfId;
    
-   CFE_SB_MsgId_t  JMsgLibMid;
+   CFE_SB_MsgId_t  JMsgLibCmdMid;
    CFE_SB_MsgId_t  CmdMid;
    CFE_SB_MsgId_t  SendStatusMid;
        

@@ -235,7 +235,6 @@ bool JMSG_TRANS_ProcessSbMsg(const CFE_MSG_Message_t *MsgPtr, const char **JMsg)
 void JMSG_TRANS_ResetStatus(void)
 {
 
-   JMSG_TOPIC_TBL_ResetStatus();
    JMsgTrans->ValidJMsgCnt    = 0;
    JMsgTrans->InvalidJMsgCnt  = 0;
    JMsgTrans->ValidSbMsgCnt   = 0;

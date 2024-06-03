@@ -181,7 +181,7 @@ static int32 InitApp(void)
       TBLMGR_Constructor(TBLMGR_OBJ, INITBL_GetStrConfig(INITBL_OBJ, CFG_APP_CFE_NAME));
       JMSG_UDP_Constructor(JMSG_UDP_OBJ, INITBL_OBJ, TBLMGR_OBJ);
 
-      JMsgUdpApp.JMsgLibMid    = CFE_SB_ValueToMsgId(INITBL_GetIntConfig(INITBL_OBJ, CFG_JMSG_LIB_CMD_TOPICID));
+      JMsgUdpApp.JMsgLibCmdMid = CFE_SB_ValueToMsgId(INITBL_GetIntConfig(INITBL_OBJ, CFG_JMSG_LIB_CMD_TOPICID));
       JMsgUdpApp.CmdMid        = CFE_SB_ValueToMsgId(INITBL_GetIntConfig(INITBL_OBJ, CFG_JMSG_UDP_CMD_TOPICID));
       JMsgUdpApp.SendStatusMid = CFE_SB_ValueToMsgId(INITBL_GetIntConfig(INITBL_OBJ, CFG_SEND_STATUS_TLM_TOPICID));
    
@@ -206,7 +206,7 @@ static int32 InitApp(void)
       */
  
       CFE_SB_CreatePipe(&JMsgUdpApp.CmdPipe, INITBL_GetIntConfig(INITBL_OBJ, CFG_CMD_PIPE_DEPTH), INITBL_GetStrConfig(INITBL_OBJ, CFG_CMD_PIPE_NAME));  
-      CFE_SB_Subscribe(JMsgUdpApp.JMsgLibMid, JMsgUdpApp.CmdPipe);
+      CFE_SB_Subscribe(JMsgUdpApp.JMsgLibCmdMid, JMsgUdpApp.CmdPipe);
       CFE_SB_Subscribe(JMsgUdpApp.CmdMid, JMsgUdpApp.CmdPipe);
       CFE_SB_Subscribe(JMsgUdpApp.SendStatusMid, JMsgUdpApp.CmdPipe);
 
@@ -217,9 +217,9 @@ static int32 InitApp(void)
       CMDMGR_RegisterFunc(CMDMGR_OBJ, JMSG_UDP_LOAD_TBL_CC, TBLMGR_OBJ, TBLMGR_LoadTblCmd, sizeof(JMSG_UDP_LoadTbl_CmdPayload_t));
       CMDMGR_RegisterFunc(CMDMGR_OBJ, JMSG_UDP_DUMP_TBL_CC, TBLMGR_OBJ, TBLMGR_DumpTblCmd, sizeof(JMSG_UDP_DumpTbl_CmdPayload_t));
  
-      CMDMGR_RegisterFunc(CMDMGR_OBJ, JMSG_LIB_CONFIG_TOPIC_PLUGIN_CC,    NULL, JMSG_TOPIC_TBL_ConfigTopicPluginCmd,     sizeof(JMSG_LIB_ConfigTopicPlugin_CmdPayload_t));
-      CMDMGR_RegisterFunc(CMDMGR_OBJ, JMSG_LIB_SEND_TOPIC_PLUGIN_TLM_CC,  NULL, JMSG_TOPIC_TBL_SendTopicTPluginTlmCmd,   0);
-      CMDMGR_RegisterFunc(CMDMGR_OBJ, JMSG_LIB_CONFIG_SB_TOPIC_TEST_CC,   NULL, JMSG_TOPIC_TBL_ConfigSbTopicTestCmd,     sizeof(JMSG_LIB_ConfigSbTopicTest_CmdPayload_t));
+      CMDMGR_RegisterFunc(CMDMGR_OBJ, JMSG_LIB_CONFIG_TOPIC_PLUGIN_CC,      NULL, JMSG_TOPIC_TBL_ConfigTopicPluginCmd,     sizeof(JMSG_LIB_ConfigTopicPlugin_CmdPayload_t));
+      CMDMGR_RegisterFunc(CMDMGR_OBJ, JMSG_LIB_SEND_TOPIC_PLUGIN_TLM_CC,    NULL, JMSG_TOPIC_TBL_SendTopicTPluginTlmCmd,   0);
+      CMDMGR_RegisterFunc(CMDMGR_OBJ, JMSG_LIB_CONFIG_TOPIC_PLUGIN_TEST_CC, NULL, JMSG_TOPIC_TBL_ConfigTopicPluginTestCmd, sizeof(JMSG_LIB_ConfigTopicPluginTest_CmdPayload_t));
 
       CMDMGR_RegisterFunc(CMDMGR_OBJ, JMSG_UDP_START_TEST_CC, NULL, JMSG_UDP_StartTestCmd, 0);
       CMDMGR_RegisterFunc(CMDMGR_OBJ, JMSG_UDP_STOP_TEST_CC,  NULL, JMSG_UDP_StopTestCmd, 0);
@@ -267,7 +267,7 @@ static int32 ProcessCommands(void)
       if (SysStatus == CFE_SUCCESS)
       {
 
-         if (CFE_SB_MsgId_Equal(MsgId, JMsgUdpApp.JMsgLibMid) || CFE_SB_MsgId_Equal(MsgId, JMsgUdpApp.CmdMid))
+         if (CFE_SB_MsgId_Equal(MsgId, JMsgUdpApp.JMsgLibCmdMid) || CFE_SB_MsgId_Equal(MsgId, JMsgUdpApp.CmdMid))
          {
             CMDMGR_DispatchFunc(CMDMGR_OBJ, &SbBufPtr->Msg);
          } 

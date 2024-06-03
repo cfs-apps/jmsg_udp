@@ -120,7 +120,7 @@ void JMSG_UDP_Constructor(JMSG_UDP_Class_t *JMsgUdpPtr, const INITBL_Class_t *In
    CFE_SB_Subscribe(CFE_SB_ValueToMsgId(CI_LAB_CMD_MID), CI_LAB_Global.CommandPipe);
    */
    
-   JMsgUdp->JMsgTestMid = CFE_SB_ValueToMsgId(INITBL_GetIntConfig(IniTbl, CFG_JMSG_TEST_PLUGIN_TOPICID));   
+   JMsgUdp->JMsgTestMid = CFE_SB_ValueToMsgId(INITBL_GetIntConfig(IniTbl, CFG_JMSG_LIB_PLUGIN_TEST_TLM_TOPICID));   
    CFE_SB_CreatePipe(&JMsgUdp->JMsgPipe, INITBL_GetIntConfig(IniTbl, CFG_JMSG_PIPE_DEPTH), INITBL_GetStrConfig(IniTbl, CFG_JMSG_PIPE_NAME));  
    CFE_SB_Subscribe(JMsgUdp->JMsgTestMid, JMsgUdp->JMsgPipe);
 
@@ -136,6 +136,7 @@ void JMSG_UDP_Constructor(JMSG_UDP_Class_t *JMsgUdpPtr, const INITBL_Class_t *In
 void JMSG_UDP_ResetStatus(void)
 {
 
+   JMSG_TOPIC_TBL_ResetStatus();
    JMsgUdp->Rx.MsgCnt    = 0;
    JMsgUdp->Rx.MsgErrCnt = 0;
    JMsgUdp->Tx.MsgCnt    = 0;
@@ -219,6 +220,61 @@ bool JMSG_UDP_TxChildTask(CHILDMGR_Class_t *ChildMgr)
 
 
 /******************************************************************************
+** Function: JMSG_UDP_StartTestCmd
+**
+** Notes:
+**   1. Signature must match CMDMGR_CmdFuncPtr_t
+**   2. DataObjPtr is not used
+*/
+bool JMSG_UDP_StartTestCmd(void* DataObjPtr, const CFE_MSG_Message_t *MsgPtr)
+{
+   
+   JMsgUdp->TestActive = true;
+   JMsgUdp->TestId     = JMSG_USR_TopicPlugin_TEST;
+   JMsgUdp->TestParam = 0;
+   
+   CFE_ES_CreateChildTask(&JMsgUdp->TestChildTaskId, "JMSG_UDP Test",
+                          TestChildTask, 0, 16384, 80, 0);
+   
+   return true;
+   
+} /* JMSG_UDP_StartTestCmd() */
+
+
+/******************************************************************************
+** Function: JMSG_UDP_StopTestCmd
+**
+** Notes:
+**   1. Signature must match CMDMGR_CmdFuncPtr_t
+**   2. DataObjPtr is not used
+*/
+bool JMSG_UDP_StopTestCmd(void* DataObjPtr, const CFE_MSG_Message_t *MsgPtr)
+{
+   
+   JMsgUdp->TestActive = false;
+   return true;
+   
+} /* JMSG_UDP_StopTestCmd() */
+
+
+/******************************************************************************
+** Function: TestChildTask
+**
+*/
+static void TestChildTask(void)
+{
+
+   while (JMsgUdp->TestActive)
+   {
+      JMSG_TOPIC_TBL_RunTopicPluginTest(JMsgUdp->TestId, false, JMsgUdp->TestParam);
+      OS_TaskDelay(2000);
+   }
+
+   
+} /* End JMSG_UDP_TxChildTask() */
+
+
+/******************************************************************************
 ** Function: ConfigSubscription
 **
 ** Callback function that is called when a topic plugin's configuration
@@ -271,60 +327,3 @@ static bool ConfigSubscription(const JMSG_TOPIC_TBL_Topic_t *Topic,
    return RetStatus;
    
 } /* End ConfigSubscription() */
-
-
-/******************************************************************************
-** Function: JMSG_UDP_StartTestCmd
-**
-** Notes:
-**   1. Signature must match CMDMGR_CmdFuncPtr_t
-**   2. DataObjPtr is not used
-*/
-bool JMSG_UDP_StartTestCmd(void* DataObjPtr, const CFE_MSG_Message_t *MsgPtr)
-{
-   
-   JMsgUdp->TestActive = true;
-   JMsgUdp->TestId     = JMSG_USR_TopicPlugin_TEST;
-   JMsgUdp->TestParam = 0;
-   
-   CFE_ES_CreateChildTask(&JMsgUdp->TestChildTaskId, "JMSG_UDP Test",
-                          TestChildTask, 0, 16384, 80, 0);
-   
-   return true;
-   
-} /* JMSG_UDP_StartTestCmd() */
-
-
-/******************************************************************************
-** Function: JMSG_UDP_StopTestCmd
-**
-** Notes:
-**   1. Signature must match CMDMGR_CmdFuncPtr_t
-**   2. DataObjPtr is not used
-*/
-bool JMSG_UDP_StopTestCmd(void* DataObjPtr, const CFE_MSG_Message_t *MsgPtr)
-{
-   
-   JMsgUdp->TestActive = false;
-   return true;
-   
-} /* JMSG_UDP_StopTestCmd() */
-
-
-/******************************************************************************
-** Function: TestChildTask
-**
-*/
-static void TestChildTask(void)
-{
-
-   while (JMsgUdp->TestActive)
-   {
-      JMSG_TOPIC_TBL_RunSbMsgTest(JMsgUdp->TestId, false, JMsgUdp->TestParam);
-      OS_TaskDelay(2000);
-   }
-
-   
-} /* End JMSG_UDP_TxChildTask() */
-   
-   
