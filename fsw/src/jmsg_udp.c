@@ -25,7 +25,7 @@
 */
 
 #include "jmsg_udp.h"
-
+#include "jmsg_udp_topic_plugin.h"
 
 /***********************/
 /** Macro Definitions **/
@@ -45,14 +45,13 @@
 
 static bool ConfigSubscription(const JMSG_TOPIC_TBL_Topic_t *Topic, 
                                JMSG_TOPIC_TBL_SubscriptionOptEnum_t ConfigOpt);
-static void TestChildTask(void);
+static void PluginTestChildTask(void);
 
 /*****************/
 /** Global Data **/
 /*****************/
 
 static JMSG_UDP_Class_t *JMsgUdp;
-
 
 /******************************************************************************
 ** Function: JMSG_UDP_Constructor
@@ -63,8 +62,7 @@ static JMSG_UDP_Class_t *JMsgUdp;
 **   1. This must be called prior to any other member functions.
 **
 */
-void JMSG_UDP_Constructor(JMSG_UDP_Class_t *JMsgUdpPtr, const INITBL_Class_t *IniTbl,
-                         TBLMGR_Class_t *TblMgr)
+void JMSG_UDP_Constructor(JMSG_UDP_Class_t *JMsgUdpPtr, const INITBL_Class_t *IniTbl)
 {
 
    int32  Status;
@@ -79,11 +77,6 @@ void JMSG_UDP_Constructor(JMSG_UDP_Class_t *JMsgUdpPtr, const INITBL_Class_t *In
    
    JMSG_TRANS_Constructor(&JMsgUdp->JMsgTrans);
  
-   JMSG_TOPIC_TBL_RegisterConfigSubscriptionCallback(ConfigSubscription);
-                              
-   TBLMGR_RegisterTblWithDef(TblMgr, JMSG_TOPIC_TBL_NAME, 
-                             JMSG_TOPIC_TBL_LoadCmd, JMSG_TOPIC_TBL_DumpCmd,  
-                             INITBL_GetStrConfig(IniTbl, CFG_JMSG_TOPIC_TBL_FILE));   
    /* Create Rx socket */
 
    Status = OS_SocketOpen(&JMsgUdp->Rx.SocketId, OS_SocketDomain_INET, OS_SocketType_DATAGRAM);
@@ -115,14 +108,30 @@ void JMSG_UDP_Constructor(JMSG_UDP_Class_t *JMsgUdpPtr, const INITBL_Class_t *In
                         "Error creating JMSG UDP Gateway Rx socket, status = %d", (int)Status);
    }
 
-   /* TODO: Add Tx logic
-   CFE_SB_CreatePipe(&CI_LAB_Global.CommandPipe, CI_LAB_PIPE_DEPTH, "CI_LAB_CMD_PIPE");
-   CFE_SB_Subscribe(CFE_SB_ValueToMsgId(CI_LAB_CMD_MID), CI_LAB_Global.CommandPipe);
-   */
-   
-   JMsgUdp->JMsgTestMid = CFE_SB_ValueToMsgId(INITBL_GetIntConfig(IniTbl, CFG_JMSG_LIB_PLUGIN_TEST_TLM_TOPICID));   
+   /* Create Tx socket */
+      
+   Status = OS_SocketOpen(&JMsgUdp->Tx.SocketId, OS_SocketDomain_INET, OS_SocketType_DATAGRAM);
+   if (Status == OS_SUCCESS)
+   {
+      uint32 TxPort = INITBL_GetIntConfig(INITBL_OBJ, CFG_TX_UDP_PORT);
+      OS_SocketAddrInit(&JMsgUdp->Tx.SocketAddr, OS_SocketDomain_INET);
+      OS_SocketAddrFromString(&JMsgUdp->Tx.SocketAddr,"127.0.0.1");
+      OS_SocketAddrSetPort(&JMsgUdp->Tx.SocketAddr,TxPort);
+
+      JMsgUdp->Tx.Connected = true;
+      CFE_EVS_SendEvent(JMSG_UDP_CONSTRUCTOR_EID, CFE_EVS_EventType_INFORMATION, 
+                           "Initialized UDP Tx port %u", (unsigned int)TxPort);
+
+   } /* Socket opened */
+   else
+   {
+      CFE_EVS_SendEvent(JMSG_UDP_CONSTRUCTOR_EID, CFE_EVS_EventType_ERROR, 
+                        "Error creating JMSG UDP Gateway Tx socket, status = %d", (int)Status);
+   }
+
+   // Must construct the pipe prior to topic plugin construction & configuration
    CFE_SB_CreatePipe(&JMsgUdp->JMsgPipe, INITBL_GetIntConfig(IniTbl, CFG_JMSG_PIPE_DEPTH), INITBL_GetStrConfig(IniTbl, CFG_JMSG_PIPE_NAME));  
-   CFE_SB_Subscribe(JMsgUdp->JMsgTestMid, JMsgUdp->JMsgPipe);
+   JMSG_UDP_TOPIC_PLUGIN_Constructor(ConfigSubscription);
 
 } /* End JMSG_UDP_Constructor() */
 
@@ -136,7 +145,6 @@ void JMSG_UDP_Constructor(JMSG_UDP_Class_t *JMsgUdpPtr, const INITBL_Class_t *In
 void JMSG_UDP_ResetStatus(void)
 {
 
-   JMSG_TOPIC_TBL_ResetStatus();
    JMsgUdp->Rx.MsgCnt    = 0;
    JMsgUdp->Rx.MsgErrCnt = 0;
    JMsgUdp->Tx.MsgCnt    = 0;
@@ -196,19 +204,25 @@ bool JMSG_UDP_TxChildTask(CHILDMGR_Class_t *ChildMgr)
 {
 
    int32  RetStatus = true;
-   int32  SbStatus;
+   int32  Status;
    CFE_SB_Buffer_t  *SbBufPtr;
-   const char *JMsgStr;
+   const char *Topic;
+   const char *Payload;
    
    while (true)
    {
-      SbStatus = CFE_SB_ReceiveBuffer(&SbBufPtr, JMsgUdp->JMsgPipe, CFE_SB_PEND_FOREVER);
+      Status = CFE_SB_ReceiveBuffer(&SbBufPtr, JMsgUdp->JMsgPipe, CFE_SB_PEND_FOREVER);
 
-      if (SbStatus == CFE_SUCCESS)
+      if (Status == CFE_SUCCESS)
       {
-         if (JMSG_TRANS_ProcessSbMsg(&SbBufPtr->Msg,&JMsgStr))
+         if (JMSG_TRANS_ProcessSbMsg(&SbBufPtr->Msg, &Topic, &Payload))
          {
-            JMsgUdp->Tx.MsgCnt++; //TODO: Replace with real logic
+            //TODO: Create buffer & compute message size
+            strcpy(JMsgUdp->Tx.Buffer,Topic);
+            strcat(JMsgUdp->Tx.Buffer,":");
+            strcat(JMsgUdp->Tx.Buffer,Payload);            
+            Status = OS_SocketSendTo(JMsgUdp->Tx.SocketId, JMsgUdp->Tx.Buffer, sizeof(JMsgUdp->Tx.Buffer), &JMsgUdp->Tx.SocketAddr);
+            JMsgUdp->Tx.MsgCnt++;         
          }
       }
       
@@ -229,12 +243,12 @@ bool JMSG_UDP_TxChildTask(CHILDMGR_Class_t *ChildMgr)
 bool JMSG_UDP_StartTestCmd(void* DataObjPtr, const CFE_MSG_Message_t *MsgPtr)
 {
    
-   JMsgUdp->TestActive = true;
-   JMsgUdp->TestId     = JMSG_USR_TopicPlugin_TEST;
-   JMsgUdp->TestParam = 0;
+   JMsgUdp->PluginTestActive = true;
+   JMsgUdp->PluginTestId     = JMSG_USR_TopicPlugin_TEST;
+   JMsgUdp->PluginTestParam  = JMSG_TEST_TestParam_UDP;
    
-   CFE_ES_CreateChildTask(&JMsgUdp->TestChildTaskId, "JMSG_UDP Test",
-                          TestChildTask, 0, 16384, 80, 0);
+   CFE_ES_CreateChildTask(&JMsgUdp->PluginTestChildTaskId, "JMSG_UDP Test",
+                          PluginTestChildTask, 0, 16384, 80, 0);
    
    return true;
    
@@ -251,27 +265,10 @@ bool JMSG_UDP_StartTestCmd(void* DataObjPtr, const CFE_MSG_Message_t *MsgPtr)
 bool JMSG_UDP_StopTestCmd(void* DataObjPtr, const CFE_MSG_Message_t *MsgPtr)
 {
    
-   JMsgUdp->TestActive = false;
+   JMsgUdp->PluginTestActive = false;
    return true;
    
 } /* JMSG_UDP_StopTestCmd() */
-
-
-/******************************************************************************
-** Function: TestChildTask
-**
-*/
-static void TestChildTask(void)
-{
-
-   while (JMsgUdp->TestActive)
-   {
-      JMSG_TOPIC_TBL_RunTopicPluginTest(JMsgUdp->TestId, false, JMsgUdp->TestParam);
-      OS_TaskDelay(2000);
-   }
-
-   
-} /* End JMSG_UDP_TxChildTask() */
 
 
 /******************************************************************************
@@ -286,39 +283,57 @@ static bool ConfigSubscription(const JMSG_TOPIC_TBL_Topic_t *Topic,
 {
 
    bool RetStatus = true;
+   int32 SbStatus;
+   CFE_SB_Qos_t Qos;
    
    switch (ConfigOpt)
    {
 
       case JMSG_TOPIC_TBL_SUB_SB:
-         // CFE_SB_Qos_t Qos;
-         // Qos.Priority    = 0;
-         // Qos.Reliability = 0;
-         // TODO: CFE_SB_SubscribeEx(CFE_SB_ValueToMsgId(Topic->Cfe), MqttMgr->TopicPipe, Qos, 20);
-         CFE_EVS_SendEvent(JMSG_TRANS_CONFIG_SUBSCRIPTIONS_EID, CFE_EVS_EventType_INFORMATION, 
-                           "JMSG_TOPIC_TBL_SUB_SB for topic %s", Topic->Name);
+         Qos.Priority    = 0;
+         Qos.Reliability = 0;
+         SbStatus = CFE_SB_SubscribeEx(CFE_SB_ValueToMsgId(Topic->Cfe), JMsgUdp->JMsgPipe, Qos, 20);
+         if (SbStatus == CFE_SUCCESS)
+         {
+            CFE_EVS_SendEvent(JMSG_UDP_CONFIG_SUBSCRIPTIONS_EID, CFE_EVS_EventType_INFORMATION, 
+                           "Subscribed to SB for topic 0x%04X(%d)", Topic->Cfe, Topic->Cfe);
+         }
+         else
+         {
+            RetStatus = false;
+            CFE_EVS_SendEvent(JMSG_UDP_CONFIG_SUBSCRIPTIONS_EID, CFE_EVS_EventType_ERROR, 
+                              "Error subscribing to SB for topic 0x%04X(%d)", Topic->Cfe, Topic->Cfe);
+         }
          break;
          
       case JMSG_TOPIC_TBL_SUB_JMSG:
-         CFE_EVS_SendEvent(JMSG_TRANS_CONFIG_SUBSCRIPTIONS_EID, CFE_EVS_EventType_INFORMATION, 
-                           "JMSG_TOPIC_TBL_SUB_JMSG for topic %s", Topic->Name);
+         CFE_EVS_SendEvent(JMSG_UDP_CONFIG_SUBSCRIPTIONS_EID, CFE_EVS_EventType_INFORMATION, 
+                           "Listening for topic %s", Topic->Name);
          break;
          
       case JMSG_TOPIC_TBL_UNSUB_SB:
-         // TODO: SbStatus = CFE_SB_Unsubscribe(CFE_SB_ValueToMsgId(Topic->Cfe), MqttMgr->TopicPipe);
-         // TODO: if(SbStatus == CFE_SUCCESS)
-         CFE_EVS_SendEvent(JMSG_TRANS_CONFIG_SUBSCRIPTIONS_EID, CFE_EVS_EventType_INFORMATION, 
-                           "JMSG_TOPIC_TBL_UNSUB_SB for topic %s", Topic->Name);
+         SbStatus = CFE_SB_Unsubscribe(CFE_SB_ValueToMsgId(Topic->Cfe), JMsgUdp->JMsgPipe);
+         if(SbStatus == CFE_SUCCESS)
+         {
+            CFE_EVS_SendEvent(JMSG_UDP_CONFIG_SUBSCRIPTIONS_EID, CFE_EVS_EventType_INFORMATION, 
+                             "Unsubscribed from SB for topic %s", Topic->Name);
+         }
+         else
+         {
+            RetStatus = false;
+            CFE_EVS_SendEvent(JMSG_UDP_CONFIG_SUBSCRIPTIONS_EID, CFE_EVS_EventType_ERROR, 
+                             "Error unsubscribing from SB for topic %s, status = %d", Topic->Name, SbStatus);            
+         }
          break;
       
       case JMSG_TOPIC_TBL_UNSUB_JMSG:
-         CFE_EVS_SendEvent(JMSG_TRANS_CONFIG_SUBSCRIPTIONS_EID, CFE_EVS_EventType_INFORMATION, 
-                           "JMSG_TOPIC_TBL_UNSUB_JMSG for topic %s", Topic->Name);
+         CFE_EVS_SendEvent(JMSG_UDP_CONFIG_SUBSCRIPTIONS_EID, CFE_EVS_EventType_INFORMATION, 
+                           "Nolonger expecting topic %s", Topic->Name);
          break;
       
       default:
          RetStatus = false;
-         CFE_EVS_SendEvent(JMSG_TRANS_CONFIG_SUBSCRIPTIONS_EID, CFE_EVS_EventType_ERROR, 
+         CFE_EVS_SendEvent(JMSG_UDP_CONFIG_SUBSCRIPTIONS_EID, CFE_EVS_EventType_ERROR, 
                            "Invalid subscription option for topic %s", Topic->Name);
          break;
 
@@ -327,3 +342,20 @@ static bool ConfigSubscription(const JMSG_TOPIC_TBL_Topic_t *Topic,
    return RetStatus;
    
 } /* End ConfigSubscription() */
+
+
+/******************************************************************************
+** Function: PluginTestChildTask
+**
+*/
+static void PluginTestChildTask(void)
+{
+
+   while (JMsgUdp->PluginTestActive)
+   {
+      JMSG_TOPIC_TBL_RunTopicPluginTest(JMsgUdp->PluginTestId, false, JMsgUdp->PluginTestParam);
+      OS_TaskDelay(2000);
+   }
+
+   
+} /* End PluginTestChildTask() */

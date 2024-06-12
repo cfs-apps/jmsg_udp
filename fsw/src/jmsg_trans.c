@@ -66,11 +66,13 @@ void JMSG_TRANS_Constructor(JMSG_TRANS_Class_t *JMsgTransPtr)
 **
 ** Notes:
 **   1. Assumes caller has ensured a null terminated string
-**   2. Test strings that can be pasted in console:
+**   2. Topic strung uses MQTT path style topics with a colon appended to the end 
+**   3. Test strings that can be pasted in console:
 **      echo -n 'hello' >  /dev/udp/localhost/8888   # Error: Null message length since no colon
 **      echo -n 'hello:' >  /dev/udp/localhost/8888  # Error: Can't find topic in table
 **      echo -n 'basecamp/test:' >  /dev/udp/localhost/8888  # Error: JSON query error since no JSON text
-**      echo -n 'basecamp/test:{"int32": 1,"float": 2.3}' >  /dev/udp/localhost/8888  # Error: 
+**      echo -n 'basecamp/test:{"int32": 1,"float": 2.3}' >  /dev/udp/localhost/8888  # Successfully send SB test message
+**      echo -n 'basecamp/rpi/demo:{"rpi-demo":{"rate-x": 1.0, "rate-y": 2.0, "rate-z": 3.0, "lux": 456}}' >  /dev/udp/localhost/8888
 */
 bool JMSG_TRANS_ProcessJMsg(const char *MsgData)
 {
@@ -124,8 +126,8 @@ bool JMSG_TRANS_ProcessJMsg(const char *MsgData)
                   
                   MsgFound = true;
                   CFE_EVS_SendEvent(JMSG_TRANS_PROCESS_JMSG_EID, CFE_EVS_EventType_INFORMATION,
-                                   "JMSG_TRANS_ProcessJMsg: Topic=%s, Payload=%s", 
-                                    MsgTopicName, MsgPayload);
+                                   "JMSG_TRANS_ProcessJMsg: Topic=%s, TopicLen=%d, Payload=%s, PayloadLen=%d", 
+                                    MsgTopicName, MsgTopicNameLen, MsgPayload, MsgPayloadLen);
                }
             } /* End if valid length */
             else
@@ -134,7 +136,8 @@ bool JMSG_TRANS_ProcessJMsg(const char *MsgData)
                                  "Table topic name %s with length %d exceeds maximum length %d", 
                                  TopicTblEntry->Name, TblTopicNameLen, JMSG_USR_MAX_TOPIC_NAME_LEN);               
             }
-         }
+         } /* End while loop */
+         
          if (!MsgFound)
          {
             TopicPluginId++;
@@ -213,13 +216,65 @@ bool JMSG_TRANS_ProcessJMsg(const char *MsgData)
 **   None
 **
 */
-bool JMSG_TRANS_ProcessSbMsg(const CFE_MSG_Message_t *MsgPtr, const char **JMsg)
+bool JMSG_TRANS_ProcessSbMsg(const CFE_MSG_Message_t *CfeMsgPtr,
+                             const char **Topic, const char **Payload)
 {
    
    bool RetStatus = false;
+   int32 TopicIndex;
+   int32 SbStatus;
+   CFE_SB_MsgId_t  MsgId = CFE_SB_INVALID_MSG_ID;
+   JMSG_TOPIC_TBL_CfeToJson_t CfeToJson;
+   const char *JsonMsgTopic;
+   const char *JsonMsgPayload;
 
-   CFE_EVS_SendEvent(JMSG_TRANS_PROCESS_SB_MSG_EID, CFE_EVS_EventType_INFORMATION, 
-                     "JMSG_TRANS_ProcessSbMsg() stub"); 
+   *Topic   = NULL; 
+   *Payload = NULL;
+   
+   SbStatus = CFE_MSG_GetMsgId(CfeMsgPtr, &MsgId);
+   if (SbStatus == CFE_SUCCESS)
+   {
+   
+      CFE_EVS_SendEvent(JMSG_TRANS_PROCESS_SB_MSG_EID, CFE_EVS_EventType_DEBUG, 
+                        "JMSG_TRANS_ProcessSbMsg: Received SB message ID 0x%04X(%d)", 
+                        CFE_SB_MsgIdToValue(MsgId), CFE_SB_MsgIdToValue(MsgId)); 
+      
+      if ((TopicIndex = JMSG_TOPIC_TBL_MsgIdToTopicPlugin(MsgId)) != JMSG_USR_TOPIC_PLUGIN_UNDEF)
+      {
+         
+         CfeToJson = JMSG_TOPIC_TBL_GetCfeToJson(TopicIndex, &JsonMsgTopic);    
+         
+         if (CfeToJson(&JsonMsgPayload, CfeMsgPtr))
+         {
+            *Topic   = JsonMsgTopic; 
+            *Payload = JsonMsgPayload;
+            RetStatus = true;
+            CFE_EVS_SendEvent(JMSG_TRANS_PROCESS_SB_MSG_EID, CFE_EVS_EventType_INFORMATION,
+                              "Created JMSG plugin topic %s message %s",
+                              JsonMsgTopic, JsonMsgPayload);             
+            JMsgTrans->ValidSbMsgCnt++;
+
+         }
+         else
+         {
+            CFE_EVS_SendEvent(JMSG_TRANS_PROCESS_SB_MSG_EID, CFE_EVS_EventType_ERROR,
+                              "Error creating JSON message from SB for plugin topic %d", TopicIndex); 
+         
+         }        
+      }
+      else
+      {
+         CFE_EVS_SendEvent(JMSG_TRANS_PROCESS_SB_MSG_EID, CFE_EVS_EventType_ERROR, 
+                           "Unable to locate SB message 0x%04X(%d) in JMSG plugin topic table", 
+                           CFE_SB_MsgIdToValue(MsgId), CFE_SB_MsgIdToValue(MsgId));
+      }
+
+   } /* End message Id */
+   else
+   {
+      CFE_EVS_SendEvent(JMSG_TRANS_PROCESS_SB_MSG_EID, CFE_EVS_EventType_ERROR, 
+                        "Error reading SB message, return status = 0x%04X", SbStatus); 
+   }
 
    return RetStatus;
    

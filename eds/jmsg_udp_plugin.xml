@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+
+    Copyright 2022 bitValence, Inc.
+    All Rights Reserved.
+
+    This program is free software; you can modify and/or redistribute it
+    under the terms of the GNU Affero General Public License
+    as published by the Free Software Foundation; version 3 with
+    attribution addendums as found in the LICENSE.txt.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Affero General Public License for more details.
+
+    Purpose: 
+      Defines the Software Bus messages the UDP JSON plugin messages
+
+    Notes:
+      1. This document adheres to the Electronic Data Sheet (EDS) XML schema 
+         as prescribed in CCSDS book 876.0.
+
+-->
+<PackageFile xmlns="http://www.ccsds.org/schema/sois/seds">
+  <Package name="JMSG_UDP_PLUGIN" shortDescription="Define JMSG_UDP app's JMSG topic plugin messages">
+    <DataTypeSet>
+
+      <!--***********************************-->
+      <!--**** DataTypeSet:  Entry Types ****-->
+      <!--***********************************-->
+
+      <EnumeratedDataType name="TopicPlugin" shortDescription="Assign values from JMSG_USR TopicPlugin definitions" >
+        <IntegerDataEncoding sizeInBits="16" encoding="unsigned" />
+        <EnumerationList>
+          <Enumeration label="RpiDemo" value="${JMSG_USR/TOPIC_PLUGIN_USR_1}"  shortDescription="" />
+        </EnumerationList>
+      </EnumeratedDataType>
+ 
+      <!--***************************************-->
+      <!--**** DataTypeSet: Command Payloads ****-->
+      <!--***************************************-->
+
+      <!--*****************************************-->
+      <!--**** DataTypeSet: Telemetry Payloads ****-->
+      <!--*****************************************-->
+    
+      <ContainerDataType name="RpiDemoTlm_Payload" shortDescription="Generic discrete integer items">
+        <EntryList>
+          <Entry name="Rate_X" type="BASE_TYPES/float"  />
+          <Entry name="Rate_Y" type="BASE_TYPES/float"  />
+          <Entry name="Rate_Z" type="BASE_TYPES/float"  />
+          <Entry name="Lux"    type="BASE_TYPES/int32"  />
+        </EntryList>
+      </ContainerDataType>
+      
+      <!--**************************************-->
+      <!--**** DataTypeSet: Command Packets ****-->
+      <!--**************************************-->
+
+
+      <!--****************************************-->
+      <!--**** DataTypeSet: Telemetry Packets ****-->
+      <!--****************************************-->
+
+     
+      <ContainerDataType name="RpiDemoTlmMsg" baseType="CFE_HDR/TelemetryHeader">
+        <EntryList>
+          <Entry type="RpiDemoTlm_Payload" name="Payload" />
+        </EntryList>
+      </ContainerDataType>
+
+    </DataTypeSet>
+    
+    <ComponentSet>
+      <Component name="Application">
+
+        <!--***********************************-->
+        <!--**** Component Set: Interfaces ****-->
+        <!--***********************************-->
+      
+        <RequiredInterfaceSet>
+                  
+          <Interface name="RPI_DEMO_TLM" shortDescription="Software bus telemetry interface" type="CFE_SB/Telemetry">
+            <GenericTypeMapSet>
+              <GenericTypeMap name="TelemetryDataType" type="RpiDemoTlmMsg" />
+            </GenericTypeMapSet>
+          </Interface>
+          
+        </RequiredInterfaceSet>
+
+        <!--***************************************-->
+        <!--**** Component Set: Implementation ****-->
+        <!--***************************************-->
+
+        <Implementation>
+          <VariableSet>
+            <Variable type="BASE_TYPES/uint16" readOnly="true" name="JMsgRpiDemoTopicId"      initialValue="${CFE_MISSION/JMSG_UDP_PLUGIN_RPI_DEMO_TLM_TOPICID}" />
+          </VariableSet>
+          <!-- Assign fixed numbers to the "TopicId" parameter of each interface -->
+          <ParameterMapSet>
+            <ParameterMap interface="RPI_DEMO_TLM"    parameter="TopicId" variableRef="JMsgRpiDemoTopicId" />
+          </ParameterMapSet>
+        </Implementation>
+      </Component>
+    </ComponentSet>
+    
+  </Package>
+</PackageFile>

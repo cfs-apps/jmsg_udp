@@ -27,14 +27,33 @@ import time
 
 def tx_thread():
     
-    for i in range(1,5):
-        jmsg = 'basecamp/test:{"int32": %i,"float": %f}' % (i, float(i)*1.3)
+    for i in range(1,2):
+        floati = float(i)
+        jmsg = 'basecamp/test:{"int32": %i,"float": %f}' % (i, floati*1.3)
         print(f'>>> Sending message {jmsg}')
         sock.sendto(jmsg.encode('ASCII'), (cfs_ip_addr, cfs_app_port))
-        time.sleep(2)
-
+        time.sleep(10)
+        jmsg = 'basecamp/rpi/demo:{"rpi-demo":{"rate-x": %f, "rate-y": %f, "rate-z": %f, "lux": %i}}' % (floati*1.0,floati*2.0,floati*3.0,i)
+        print(f'>>> Sending message {jmsg}')
+        sock.sendto(jmsg.encode('ASCII'), (cfs_ip_addr, cfs_app_port))
+        
 def rx_thread():
-    time.sleep(2)
+
+    rx_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    rx_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+    rx_socket.bind((cfs_ip_addr, py_app_port))
+    rx_socket.setblocking(False)
+    rx_socket.settimeout(1000)
+
+    while True:    
+        try:
+            while True:
+                datagram, host = rx_socket.recvfrom(1024)
+                datastr = datagram.decode('utf-8')
+                print(f'Received from {host} jmsg size={len(datastr)}: {datastr}')
+        except socket.timeout:
+            pass
+        time.sleep(2)
 
     
 if __name__ == "__main__":
@@ -45,7 +64,11 @@ if __name__ == "__main__":
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     cfs_ip_addr  = config.get('NETWORK','CFS_IP_ADDR')
     cfs_app_port = config.getint('NETWORK','CFS_APP_PORT')
-    
-    tx = threading.Thread(target=tx_thread)
-    tx.start()
+    py_app_port = config.getint('NETWORK','PY_APP_PORT')
+
+    rx = threading.Thread(target=rx_thread)
+    rx.start()
+   
+    #tx = threading.Thread(target=tx_thread)
+    #tx.start()
         

@@ -56,7 +56,7 @@ typedef struct
    bool            Connected;   
    osal_id_t       SocketId;
    OS_SockAddr_t   SocketAddr;
-   char            Buffer[JMSG_UDP_READ_BUF_LEN];
+   char            Buffer[JMSG_UDP_BUF_LEN];  
    uint32          MsgCnt;
    uint32          MsgErrCnt;
    
@@ -72,14 +72,13 @@ typedef struct
    JMSG_UDP_Socket_t Tx;
    
    CFE_SB_PipeId_t   JMsgPipe;
-   CFE_SB_MsgId_t    JMsgTestMid;
       
    JMSG_TRANS_Class_t JMsgTrans;
    
-   CFE_ES_TaskId_t  TestChildTaskId;
-   bool             TestActive;
-   int16            TestParam;
-   JMSG_USR_TopicPlugin_Enum_t  TestId;
+   CFE_ES_TaskId_t  PluginTestChildTaskId;
+   bool             PluginTestActive;
+   int16            PluginTestParam;
+   JMSG_USR_TopicPlugin_Enum_t  PluginTestId;
    
 } JMSG_UDP_Class_t;
 
@@ -98,8 +97,7 @@ typedef struct
 **   1. This must be called prior to any other member functions.
 **
 */
-void JMSG_UDP_Constructor(JMSG_UDP_Class_t *UdpMgrPtr, const INITBL_Class_t *IniTbl,
-                         TBLMGR_Class_t *TblMgr);
+void JMSG_UDP_Constructor(JMSG_UDP_Class_t *UdpMgrPtr, const INITBL_Class_t *IniTbl);
 
 
 /******************************************************************************

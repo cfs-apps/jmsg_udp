@@ -44,9 +44,8 @@
 */
 
 // TODO: Decide if need separate debug message EIDs that can be filtered
-#define JMSG_TRANS_PROCESS_JMSG_EID          (JMSG_TRANS_BASE_EID + 0)
-#define JMSG_TRANS_PROCESS_SB_MSG_EID        (JMSG_TRANS_BASE_EID + 1)
-#define JMSG_TRANS_CONFIG_SUBSCRIPTIONS_EID  (JMSG_TRANS_BASE_EID + 2)
+#define JMSG_TRANS_PROCESS_JMSG_EID       (JMSG_TRANS_BASE_EID + 0)
+#define JMSG_TRANS_PROCESS_SB_MSG_EID     (JMSG_TRANS_BASE_EID + 1)
 
 /**********************/
 /** Type Definitions **/
@@ -59,7 +58,7 @@
 typedef struct
 {
    
-   char   Data[JMSG_UDP_READ_BUF_LEN];
+   char   Data[JMSG_UDP_BUF_LEN];
 
 }  JMSG_Payload_t;
 
@@ -129,7 +128,8 @@ bool JMSG_TRANS_ProcessJMsg(const char *MsgData);
 **   None
 **
 */
-bool JMSG_TRANS_ProcessSbMsg(const CFE_MSG_Message_t *MsgPtr, const char **JMsg);
+bool JMSG_TRANS_ProcessSbMsg(const CFE_MSG_Message_t *CfeMsgPtr,
+                             const char **Topic, const char **Payload);
 
 
 /******************************************************************************

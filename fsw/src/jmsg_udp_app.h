@@ -76,7 +76,6 @@ typedef struct
    INITBL_Class_t    IniTbl; 
    CFE_SB_PipeId_t   CmdPipe;
    CMDMGR_Class_t    CmdMgr;
-   TBLMGR_Class_t    TblMgr; 
    CHILDMGR_Class_t  RxChildMgr;
    CHILDMGR_Class_t  TxChildMgr;
       
@@ -93,7 +92,6 @@ typedef struct
    
    uint32 PerfId;
    
-   CFE_SB_MsgId_t  JMsgLibCmdMid;
    CFE_SB_MsgId_t  CmdMid;
    CFE_SB_MsgId_t  SendStatusMid;
        
@@ -115,7 +113,7 @@ extern JMSG_UDP_APP_Class_t  JMsgUdpApp;
 
 
 /******************************************************************************
-** Function: JSON_AppMain
+** Function: JMSG_AppMain
 **
 */
 void JMSG_UDP_AppMain(void);
