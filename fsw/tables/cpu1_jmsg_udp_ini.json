@@ -22,14 +22,14 @@
       "RX_UDP_PORT":         8888,
       "RX_CHILD_NAME":       "JMSG_UDP_RX",
       "RX_CHILD_STACK_SIZE": 32768,
-      "RX_CHILD_PRIORITY":   120,
+      "RX_CHILD_PRIORITY":   70,
       "RX_CHILD_PERF_ID":    92,
       
       "TX_UDP_ADDR":         "127.0.0.1",
       "TX_UDP_PORT":         9999,
       "TX_CHILD_NAME":       "JMSG_UDP_TX",
       "TX_CHILD_STACK_SIZE": 32768,
-      "TX_CHILD_PRIORITY":   120,
+      "TX_CHILD_PRIORITY":   70,
       "TX_CHILD_PERF_ID":    93,
       "TX_SB_PIPE_NAME":     "JMSG_UDP_TOPIC_PIPE",
       "TX_SB_PIPE_DEPTH":    10
