@@ -25,6 +25,7 @@
       "RX_CHILD_PRIORITY":   120,
       "RX_CHILD_PERF_ID":    92,
       
+      "TX_UDP_ADDR":         "127.0.0.1",
       "TX_UDP_PORT":         9999,
       "TX_CHILD_NAME":       "JMSG_UDP_TX",
       "TX_CHILD_STACK_SIZE": 32768,

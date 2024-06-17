@@ -77,7 +77,7 @@ void JMSG_TRANS_Constructor(JMSG_TRANS_Class_t *JMsgTransPtr)
 bool JMSG_TRANS_ProcessJMsg(const char *MsgData)
 {
    char    *MsgPayload;
-   char    MsgTopicName[JMSG_USR_MAX_TOPIC_NAME_LEN]; 
+   char    MsgTopicName[JMSG_USR_TOPIC_NAME_MAX_LEN]; 
    uint16  MsgTopicNameLen;
    uint16  MsgPayloadLen;
    uint16  TblTopicNameLen;
@@ -115,7 +115,7 @@ bool JMSG_TRANS_ProcessJMsg(const char *MsgData)
          {
             TblTopicNameLen = strlen(TopicTblEntry->Name);
             
-            if (TblTopicNameLen < JMSG_USR_MAX_TOPIC_NAME_LEN)
+            if (TblTopicNameLen < JMSG_USR_TOPIC_NAME_MAX_LEN)
             {
                
                CFE_EVS_SendEvent(JMSG_TRANS_PROCESS_JMSG_EID, CFE_EVS_EventType_INFORMATION,
@@ -134,7 +134,7 @@ bool JMSG_TRANS_ProcessJMsg(const char *MsgData)
             {
                CFE_EVS_SendEvent(JMSG_TRANS_PROCESS_JMSG_EID, CFE_EVS_EventType_ERROR,
                                  "Table topic name %s with length %d exceeds maximum length %d", 
-                                 TopicTblEntry->Name, TblTopicNameLen, JMSG_USR_MAX_TOPIC_NAME_LEN);               
+                                 TopicTblEntry->Name, TblTopicNameLen, JMSG_USR_TOPIC_NAME_MAX_LEN);               
             }
          } /* End while loop */
          

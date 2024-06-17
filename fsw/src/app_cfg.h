@@ -41,11 +41,11 @@
 /*
 ** Versions:
 **
-** 0.9 - Prototype
+** 1.0 - Initial release tested with jmsg_lib 1.0 and jmsg_mqtt 2.0
 */
 
-#define  JMSG_UDP_APP_MAJOR_VER      0
-#define  JMSG_UDP_APP_MINOR_VER      9
+#define  JMSG_UDP_APP_MAJOR_VER   1
+#define  JMSG_UDP_APP_MINOR_VER   0
 
 
 /******************************************************************************
@@ -86,6 +86,7 @@
 #define CFG_RX_CHILD_PRIORITY    RX_CHILD_PRIORITY
 #define CFG_RX_CHILD_PERF_ID     RX_CHILD_PERF_ID
 
+#define CFG_TX_UDP_ADDR          TX_UDP_ADDR
 #define CFG_TX_UDP_PORT          TX_UDP_PORT
 #define CFG_TX_CHILD_NAME        TX_CHILD_NAME
 #define CFG_TX_CHILD_STACK_SIZE  TX_CHILD_STACK_SIZE
@@ -110,6 +111,7 @@
    XX(RX_CHILD_STACK_SIZE,uint32) \
    XX(RX_CHILD_PRIORITY,uint32) \
    XX(RX_CHILD_PERF_ID,uint32) \
+   XX(TX_UDP_ADDR,char*) \
    XX(TX_UDP_PORT,uint32) \
    XX(TX_CHILD_NAME,char*) \
    XX(TX_CHILD_STACK_SIZE,uint32) \

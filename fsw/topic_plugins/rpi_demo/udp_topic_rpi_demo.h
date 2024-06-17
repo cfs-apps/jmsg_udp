@@ -40,12 +40,10 @@
 ** Event Message IDs
 */
 
-#define UDP_TOPIC_RPI_DEMO_BASE_EID   JMSG_USR_TopicPluginBaseEid_USR_1 // Create local define in case USR assignment changes
-
-#define UDP_TOPIC_RPI_DEMO_INIT_PLUGIN_TEST_EID  (UDP_TOPIC_RPI_DEMO_BASE_EID + 0)
-#define UDP_TOPIC_RPI_DEMO_PLUGIN_TEST_EID       (UDP_TOPIC_RPI_DEMO_BASE_EID + 1)
-#define UDP_TOPIC_RPI_DEMO_LOAD_JSON_DATA_EID    (UDP_TOPIC_RPI_DEMO_BASE_EID + 2)
-#define UDP_TOPIC_RPI_DEMO_JSON_TO_CCSDS_ERR_EID (UDP_TOPIC_RPI_DEMO_BASE_EID + 3)
+#define UDP_TOPIC_RPI_DEMO_INIT_PLUGIN_TEST_EID  (JMSG_UDP_PLUGIN_TopicPluginBaseEid_RpiDemo + 0)
+#define UDP_TOPIC_RPI_DEMO_PLUGIN_TEST_EID       (JMSG_UDP_PLUGIN_TopicPluginBaseEid_RpiDemo + 1)
+#define UDP_TOPIC_RPI_DEMO_LOAD_JSON_DATA_EID    (JMSG_UDP_PLUGIN_TopicPluginBaseEid_RpiDemo + 2)
+#define UDP_TOPIC_RPI_DEMO_JSON_TO_CCSDS_ERR_EID (JMSG_UDP_PLUGIN_TopicPluginBaseEid_RpiDemo + 3)
 
 /**********************/
 /** Type Definitions **/

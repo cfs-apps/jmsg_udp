@@ -115,7 +115,7 @@ void JMSG_UDP_Constructor(JMSG_UDP_Class_t *JMsgUdpPtr, const INITBL_Class_t *In
    {
       uint32 TxPort = INITBL_GetIntConfig(INITBL_OBJ, CFG_TX_UDP_PORT);
       OS_SocketAddrInit(&JMsgUdp->Tx.SocketAddr, OS_SocketDomain_INET);
-      OS_SocketAddrFromString(&JMsgUdp->Tx.SocketAddr,"127.0.0.1");
+      OS_SocketAddrFromString(&JMsgUdp->Tx.SocketAddr,INITBL_GetStrConfig(INITBL_OBJ, CFG_TX_UDP_ADDR));
       OS_SocketAddrSetPort(&JMsgUdp->Tx.SocketAddr,TxPort);
 
       JMsgUdp->Tx.Connected = true;
