@@ -3,7 +3,7 @@
    "app": {
    
    "title": "JMSG_UDP",
-   "version": "0.9.0",
+   "version": "1.0.0",
    "supplier": "Open STEMware",
    "copyright": "bitValence",
    "url": "https://github.com/cfs-apps/jmsg_udp",
