@@ -48,11 +48,15 @@
           <Entry name="ValidCmdCnt"     type="BASE_TYPES/uint16"   />
           <Entry name="InvalidCmdCnt"   type="BASE_TYPES/uint16"   />
           <Entry name="RxUdpConnected"  type="APP_C_FW/BooleanUint8" />
-          <Entry name="TxUdpConnected"  type="APP_C_FW/BooleanUint8" />
           <Entry name="RxUdpMsgCnt"     type="BASE_TYPES/uint32" />
           <Entry name="RxUdpMsgErrCnt"  type="BASE_TYPES/uint32" />
+          <Entry name="ValidJMsgCnt"    type="BASE_TYPES/uint32" />
+          <Entry name="InvalidJMsgCnt"  type="BASE_TYPES/uint32" />
+          <Entry name="TxUdpConnected"  type="APP_C_FW/BooleanUint8" />
           <Entry name="TxUdpMsgCnt"     type="BASE_TYPES/uint32" />
           <Entry name="TxUdpMsgErrCnt"  type="BASE_TYPES/uint32" />
+          <Entry name="ValidSbMsgCnt"   type="BASE_TYPES/uint32" />
+          <Entry name="InvalidSbMsgCnt" type="BASE_TYPES/uint32" />
         </EntryList>
       </ContainerDataType>
 
@@ -75,18 +79,6 @@
           <ValueConstraint entry="Sec.FunctionCode" value="${APP_C_FW/RESET_CC}" />
         </ConstraintSet>
       </ContainerDataType>
-
-      <ContainerDataType name="StartTest" baseType="CommandBase" shortDescription="Start built-in test">
-        <ConstraintSet>
-          <ValueConstraint entry="Sec.FunctionCode" value="${APP_C_FW/APP_BASE_CC} + 0" />
-        </ConstraintSet>
-      </ContainerDataType>      
-
-      <ContainerDataType name="StopTest" baseType="CommandBase" shortDescription="Start built-in test">
-        <ConstraintSet>
-          <ValueConstraint entry="Sec.FunctionCode" value="${APP_C_FW/APP_BASE_CC} + 1" />
-        </ConstraintSet>
-      </ContainerDataType>      
 
       <!--****************************************-->
       <!--**** DataTypeSet: Telemetry Packets ****-->

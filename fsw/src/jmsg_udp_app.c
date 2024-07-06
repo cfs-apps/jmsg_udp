@@ -61,7 +61,7 @@ DEFINE_ENUM(Config,APP_CONFIG)
 static CFE_EVS_BinFilter_t  EventFilters[] =
 {  
    /* Event ID                           Mask */
-   {JMSG_UDP_RX_CHILD_TASK_EID, CFE_EVS_NO_FILTER}
+   {JMSG_UDP_RX_CHILD_TASK_EID, CFE_EVS_FIRST_4_STOP} // CFE_EVS_NO_FILTER
 };
 
 /*****************/
@@ -161,7 +161,8 @@ static int32 InitApp(void)
 {
 
    int32 RetStatus = APP_C_FW_CFS_ERROR;
-   
+      
+   CFE_SB_Qos_t SbQos;
    CHILDMGR_TaskInit_t ChildTaskInit;
 
 
@@ -177,8 +178,9 @@ static int32 InitApp(void)
 
       JMSG_UDP_Constructor(JMSG_UDP_OBJ, INITBL_OBJ);
 
-      JMsgUdpApp.CmdMid        = CFE_SB_ValueToMsgId(INITBL_GetIntConfig(INITBL_OBJ, CFG_JMSG_UDP_CMD_TOPICID));
-      JMsgUdpApp.SendStatusMid = CFE_SB_ValueToMsgId(INITBL_GetIntConfig(INITBL_OBJ, CFG_SEND_STATUS_TLM_TOPICID));
+      JMsgUdpApp.CmdMid         = CFE_SB_ValueToMsgId(INITBL_GetIntConfig(INITBL_OBJ, CFG_JMSG_UDP_CMD_TOPICID));
+      JMsgUdpApp.SendStatusMid  = CFE_SB_ValueToMsgId(INITBL_GetIntConfig(INITBL_OBJ, CFG_SEND_STATUS_TLM_TOPICID));
+      JMsgUdpApp.TopicSubTlmMid = CFE_SB_ValueToMsgId(INITBL_GetIntConfig(INITBL_OBJ, CFG_JMSG_LIB_TOPIC_SUBSCRIBE_TLM_TOPICID));
    
       /* Child Manager constructor sends error events */
 
@@ -204,13 +206,13 @@ static int32 InitApp(void)
       CFE_SB_Subscribe(JMsgUdpApp.CmdMid, JMsgUdpApp.CmdPipe);
       CFE_SB_Subscribe(JMsgUdpApp.SendStatusMid, JMsgUdpApp.CmdPipe);
 
+      SbQos.Priority    = 0;
+      SbQos.Reliability = 0;
+      CFE_SB_SubscribeEx(JMsgUdpApp.TopicSubTlmMid, JMsgUdpApp.CmdPipe, SbQos, JMSG_PLATFORM_TOPIC_PLUGIN_MAX);
+
       CMDMGR_Constructor(CMDMGR_OBJ);
       CMDMGR_RegisterFunc(CMDMGR_OBJ, JMSG_UDP_NOOP_CC,  NULL, JMSG_UDP_APP_NoOpCmd,     0);
       CMDMGR_RegisterFunc(CMDMGR_OBJ, JMSG_UDP_RESET_CC, NULL, JMSG_UDP_APP_ResetAppCmd, 0);
- 
-      CMDMGR_RegisterFunc(CMDMGR_OBJ, JMSG_UDP_START_TEST_CC, NULL, JMSG_UDP_StartTestCmd, 0);
-      CMDMGR_RegisterFunc(CMDMGR_OBJ, JMSG_UDP_STOP_TEST_CC,  NULL, JMSG_UDP_StopTestCmd, 0);
-
          
       CFE_MSG_Init(CFE_MSG_PTR(JMsgUdpApp.StatusTlm.TelemetryHeader), CFE_SB_ValueToMsgId(INITBL_GetIntConfig(INITBL_OBJ, CFG_JMSG_UDP_STATUS_TLM_TOPICID)), sizeof(JMSG_UDP_StatusTlm_t));
 
@@ -262,6 +264,10 @@ static int32 ProcessCommands(void)
          {   
             SendStatusPkt();
          }
+         else if (CFE_SB_MsgId_Equal(MsgId, JMsgUdpApp.TopicSubTlmMid))
+         {   
+            JMSG_UDP_SubscribeToTopicPlugin(&SbBufPtr->Msg);
+         }
          else
          {   
             CFE_EVS_SendEvent(JMSG_UDP_APP_INVALID_MID_EID, CFE_EVS_EventType_ERROR,
@@ -304,14 +310,18 @@ void SendStatusPkt(void)
    ** UDP Manager Data
    */
 
-   Payload->RxUdpConnected = JMsgUdpApp.JMsgUdp.Rx.Connected;
-   Payload->RxUdpMsgCnt    = JMsgUdpApp.JMsgUdp.Rx.MsgCnt;
-   Payload->RxUdpMsgErrCnt = JMsgUdpApp.JMsgUdp.Rx.MsgErrCnt;
+   Payload->RxUdpConnected  = JMsgUdpApp.JMsgUdp.Rx.Connected;
+   Payload->RxUdpMsgCnt     = JMsgUdpApp.JMsgUdp.Rx.MsgCnt;
+   Payload->RxUdpMsgErrCnt  = JMsgUdpApp.JMsgUdp.Rx.MsgErrCnt;
+   Payload->ValidJMsgCnt    = JMsgUdpApp.JMsgUdp.JMsgTrans.ValidJMsgCnt;
+   Payload->InvalidJMsgCnt  = JMsgUdpApp.JMsgUdp.JMsgTrans.InvalidJMsgCnt;
    
-   Payload->TxUdpConnected = JMsgUdpApp.JMsgUdp.Tx.Connected;
-   Payload->TxUdpMsgCnt    = JMsgUdpApp.JMsgUdp.Tx.MsgCnt;
-   Payload->TxUdpMsgErrCnt = JMsgUdpApp.JMsgUdp.Tx.MsgErrCnt;
-
+   Payload->TxUdpConnected  = JMsgUdpApp.JMsgUdp.Tx.Connected;
+   Payload->TxUdpMsgCnt     = JMsgUdpApp.JMsgUdp.Tx.MsgCnt;
+   Payload->TxUdpMsgErrCnt  = JMsgUdpApp.JMsgUdp.Tx.MsgErrCnt;
+   Payload->ValidSbMsgCnt   = JMsgUdpApp.JMsgUdp.JMsgTrans.ValidSbMsgCnt;
+   Payload->InvalidSbMsgCnt = JMsgUdpApp.JMsgUdp.JMsgTrans.InvalidSbMsgCnt;
+      
    CFE_SB_TimeStampMsg(CFE_MSG_PTR(JMsgUdpApp.StatusTlm.TelemetryHeader));
    CFE_SB_TransmitMsg(CFE_MSG_PTR(JMsgUdpApp.StatusTlm.TelemetryHeader), true);
 

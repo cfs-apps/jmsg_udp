@@ -77,13 +77,13 @@ void JMSG_TRANS_Constructor(JMSG_TRANS_Class_t *JMsgTransPtr)
 bool JMSG_TRANS_ProcessJMsg(const char *MsgData)
 {
    char    *MsgPayload;
-   char    MsgTopicName[JMSG_USR_TOPIC_NAME_MAX_LEN]; 
+   char    MsgTopicName[JMSG_PLATFORM_TOPIC_NAME_MAX_LEN]; 
    uint16  MsgTopicNameLen;
    uint16  MsgPayloadLen;
    uint16  TblTopicNameLen;
    bool    MsgFound = false;
    const JMSG_TOPIC_TBL_Topic_t *TopicTblEntry;
-   enum  JMSG_USR_TopicPlugin TopicPluginId = JMSG_USR_TopicPlugin_Enum_t_MIN;
+   JMSG_PLATFORM_TopicPlugin_Enum_t TopicPluginId = JMSG_PLATFORM_TopicPlugin_Enum_t_MIN;
 
    JMSG_TOPIC_TBL_JsonToCfe_t JsonToCfe;
    CFE_MSG_Message_t *CfeMsg;
@@ -92,7 +92,7 @@ bool JMSG_TRANS_ProcessJMsg(const char *MsgData)
    CFE_MSG_Type_t    MsgType;
    
    
-   CFE_EVS_SendEvent(JMSG_TRANS_PROCESS_JMSG_EID, CFE_EVS_EventType_INFORMATION,
+   CFE_EVS_SendEvent(JMSG_TRANS_PROCESS_JMSG_EID, CFE_EVS_EventType_DEBUG,
                      "JMSG_TRANS_ProcessJMsg: Received JMSG %s", MsgData);
                     
    MsgPayload = strchr(MsgData, ':');
@@ -105,27 +105,27 @@ bool JMSG_TRANS_ProcessJMsg(const char *MsgData)
       MsgTopicName[MsgTopicNameLen] = '\0';
       MsgPayloadLen = strlen(MsgData) - MsgTopicNameLen;
       
-      CFE_EVS_SendEvent(JMSG_TRANS_PROCESS_JMSG_EID, CFE_EVS_EventType_INFORMATION,
+      CFE_EVS_SendEvent(JMSG_TRANS_PROCESS_JMSG_EID, CFE_EVS_EventType_DEBUG,
                         "Message topic name len %d, text: %s", MsgTopicNameLen, MsgTopicName);
 
-      while (!MsgFound && TopicPluginId < JMSG_USR_TopicPlugin_Enum_t_MAX)
+      while (!MsgFound && TopicPluginId <= JMSG_PLATFORM_TopicPlugin_Enum_t_MAX)
       {
          TopicTblEntry = JMSG_TOPIC_TBL_GetTopic(TopicPluginId);
          if (TopicTblEntry != NULL)
          {
             TblTopicNameLen = strlen(TopicTblEntry->Name);
             
-            if (TblTopicNameLen < JMSG_USR_TOPIC_NAME_MAX_LEN)
+            if (TblTopicNameLen < JMSG_PLATFORM_TOPIC_NAME_MAX_LEN)
             {
                
-               CFE_EVS_SendEvent(JMSG_TRANS_PROCESS_JMSG_EID, CFE_EVS_EventType_INFORMATION,
+               CFE_EVS_SendEvent(JMSG_TRANS_PROCESS_JMSG_EID, CFE_EVS_EventType_DEBUG,
                                  "Table topic name=%s, length=%d", TopicTblEntry->Name, TblTopicNameLen);
                
                if (strncmp(TopicTblEntry->Name, MsgTopicName, TblTopicNameLen) == 0)
                {
                   
                   MsgFound = true;
-                  CFE_EVS_SendEvent(JMSG_TRANS_PROCESS_JMSG_EID, CFE_EVS_EventType_INFORMATION,
+                  CFE_EVS_SendEvent(JMSG_TRANS_PROCESS_JMSG_EID, CFE_EVS_EventType_DEBUG,
                                    "JMSG_TRANS_ProcessJMsg: Topic=%s, TopicLen=%d, Payload=%s, PayloadLen=%d", 
                                     MsgTopicName, MsgTopicNameLen, MsgPayload, MsgPayloadLen);
                }
@@ -134,7 +134,7 @@ bool JMSG_TRANS_ProcessJMsg(const char *MsgData)
             {
                CFE_EVS_SendEvent(JMSG_TRANS_PROCESS_JMSG_EID, CFE_EVS_EventType_ERROR,
                                  "Table topic name %s with length %d exceeds maximum length %d", 
-                                 TopicTblEntry->Name, TblTopicNameLen, JMSG_USR_TOPIC_NAME_MAX_LEN);               
+                                 TopicTblEntry->Name, TblTopicNameLen, JMSG_PLATFORM_TOPIC_NAME_MAX_LEN);               
             }
          } /* End while loop */
          
@@ -147,7 +147,7 @@ bool JMSG_TRANS_ProcessJMsg(const char *MsgData)
       if (MsgFound)
       {
             
-         CFE_EVS_SendEvent(JMSG_TRANS_PROCESS_JMSG_EID, CFE_EVS_EventType_INFORMATION,
+         CFE_EVS_SendEvent(JMSG_TRANS_PROCESS_JMSG_EID, CFE_EVS_EventType_DEBUG,
                            "JMSG_TRANS_ProcessJMsg: Found message at index %d", TopicPluginId); 
                               
          JsonToCfe = JMSG_TOPIC_TBL_GetJsonToCfe(TopicPluginId);    
@@ -169,7 +169,7 @@ bool JMSG_TRANS_ProcessJMsg(const char *MsgData)
                CFE_SB_TimeStampMsg(CFE_MSG_PTR(*CfeMsg));
             }
             
-            CFE_EVS_SendEvent(JMSG_TRANS_PROCESS_JMSG_EID, CFE_EVS_EventType_INFORMATION,
+            CFE_EVS_SendEvent(JMSG_TRANS_PROCESS_JMSG_EID, CFE_EVS_EventType_DEBUG,
                               "MSG_TRANS_ProcessJMsg: Sending SB message 0x%04X(%d), len %d, type %d", 
                               CFE_SB_MsgIdToValue(MsgId), CFE_SB_MsgIdToValue(MsgId), (int)MsgSize, (int)MsgType); 
             CFE_SB_TransmitMsg(CFE_MSG_PTR(*CfeMsg), true);               
@@ -239,7 +239,7 @@ bool JMSG_TRANS_ProcessSbMsg(const CFE_MSG_Message_t *CfeMsgPtr,
                         "JMSG_TRANS_ProcessSbMsg: Received SB message ID 0x%04X(%d)", 
                         CFE_SB_MsgIdToValue(MsgId), CFE_SB_MsgIdToValue(MsgId)); 
       
-      if ((TopicIndex = JMSG_TOPIC_TBL_MsgIdToTopicPlugin(MsgId)) != JMSG_USR_TOPIC_PLUGIN_UNDEF)
+      if ((TopicIndex = JMSG_TOPIC_TBL_MsgIdToTopicPlugin(MsgId)) != JMSG_PLATFORM_TOPIC_PLUGIN_UNDEF)
       {
          
          CfeToJson = JMSG_TOPIC_TBL_GetCfeToJson(TopicIndex, &JsonMsgTopic);    

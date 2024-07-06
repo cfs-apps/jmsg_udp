@@ -40,9 +40,10 @@
 ** Event Message IDs
 */
 
-#define JMSG_UDP_CONSTRUCTOR_EID           (JMSG_UDP_BASE_EID + 0)
-#define JMSG_UDP_CONFIG_SUBSCRIPTIONS_EID  (JMSG_UDP_BASE_EID + 1)
-#define JMSG_UDP_RX_CHILD_TASK_EID         (JMSG_UDP_BASE_EID + 2)
+#define JMSG_UDP_CONSTRUCTOR_EID             (JMSG_UDP_BASE_EID + 0)
+#define JMSG_UDP_CONFIG_SUBSCRIPTIONS_EID    (JMSG_UDP_BASE_EID + 1)
+#define JMSG_UDP_RX_CHILD_TASK_EID           (JMSG_UDP_BASE_EID + 2)
+#define JMSG_UDP_SUBSCRIBE_TOPIC_PLUGIN_EID  (JMSG_UDP_BASE_EID + 3)
 
 
 /**********************/
@@ -74,11 +75,6 @@ typedef struct
    CFE_SB_PipeId_t   JMsgPipe;
       
    JMSG_TRANS_Class_t JMsgTrans;
-   
-   CFE_ES_TaskId_t  PluginTestChildTaskId;
-   bool             PluginTestActive;
-   int16            PluginTestParam;
-   JMSG_USR_TopicPlugin_Enum_t  PluginTestId;
    
 } JMSG_UDP_Class_t;
 
@@ -117,23 +113,10 @@ bool JMSG_UDP_RxChildTask(CHILDMGR_Class_t *ChildMgr);
 
 
 /******************************************************************************
-** Function: JMSG_UDP_StartTestCmd
+** Function: JMSG_UDP_SubscribeToTopicPlugin
 **
-** Notes:
-**   1. Signature must match CMDMGR_CmdFuncPtr_t
-**   2. DataObjPtr is not used
 */
-bool JMSG_UDP_StartTestCmd(void* DataObjPtr, const CFE_MSG_Message_t *MsgPtr);
-
-
-/******************************************************************************
-** Function: JMSG_UDP_StopTestCmd
-**
-** Notes:
-**   1. Signature must match CMDMGR_CmdFuncPtr_t
-**   2. DataObjPtr is not used
-*/
-bool JMSG_UDP_StopTestCmd(void* DataObjPtr, const CFE_MSG_Message_t *MsgPtr);
+bool JMSG_UDP_SubscribeToTopicPlugin(const CFE_MSG_Message_t *MsgPtr);
 
 
 /******************************************************************************

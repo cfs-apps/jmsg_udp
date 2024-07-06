@@ -26,7 +26,7 @@
       "tables": ["jmsg_udp_ini.json"]
    },
 
-   "requires": ["app_c_fw", "jmsg_lib"]
+   "requires": ["app_c_fw", "jmsg_lib", "jmsg_app"]
 
 }}
 

@@ -94,7 +94,8 @@ typedef struct
    
    CFE_SB_MsgId_t  CmdMid;
    CFE_SB_MsgId_t  SendStatusMid;
-       
+   CFE_SB_MsgId_t  TopicSubTlmMid;
+   
    JMSG_UDP_Class_t JMsgUdp;
 
 } JMSG_UDP_APP_Class_t;

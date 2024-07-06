@@ -25,7 +25,6 @@
 */
 
 #include "jmsg_udp.h"
-#include "jmsg_udp_topic_plugin.h"
 
 /***********************/
 /** Macro Definitions **/
@@ -45,7 +44,7 @@
 
 static bool ConfigSubscription(const JMSG_TOPIC_TBL_Topic_t *Topic, 
                                JMSG_TOPIC_TBL_SubscriptionOptEnum_t ConfigOpt);
-static void PluginTestChildTask(void);
+
 
 /*****************/
 /** Global Data **/
@@ -92,7 +91,7 @@ void JMSG_UDP_Constructor(JMSG_UDP_Class_t *JMsgUdpPtr, const INITBL_Class_t *In
       if (Status == OS_SUCCESS)
       {
          JMsgUdp->Rx.Connected = true;
-         CFE_EVS_SendEvent(JMSG_UDP_CONSTRUCTOR_EID, CFE_EVS_EventType_INFORMATION, 
+         CFE_EVS_SendEvent(JMSG_UDP_CONSTRUCTOR_EID, CFE_EVS_EventType_DEBUG, 
                            "JMSG UDP Gateway listening on UDP port %u", (unsigned int)RxPort);
       }
       else
@@ -129,9 +128,7 @@ void JMSG_UDP_Constructor(JMSG_UDP_Class_t *JMsgUdpPtr, const INITBL_Class_t *In
                         "Error creating JMSG UDP Gateway Tx socket, status = %d", (int)Status);
    }
 
-   // Must construct the pipe prior to topic plugin construction & configuration
    CFE_SB_CreatePipe(&JMsgUdp->JMsgPipe, INITBL_GetIntConfig(IniTbl, CFG_JMSG_PIPE_DEPTH), INITBL_GetStrConfig(IniTbl, CFG_JMSG_PIPE_NAME));  
-   JMSG_UDP_TOPIC_PLUGIN_Constructor(ConfigSubscription);
 
 } /* End JMSG_UDP_Constructor() */
 
@@ -194,6 +191,50 @@ bool JMSG_UDP_RxChildTask(CHILDMGR_Class_t *ChildMgr)
 
 
 /******************************************************************************
+** Function: JMSG_UDP_SubscribeToTopicPlugin
+**
+*/
+bool JMSG_UDP_SubscribeToTopicPlugin(const CFE_MSG_Message_t *MsgPtr)
+{
+   const JMSG_LIB_TopicSubscribeTlm_Payload_t *TopicSubscribe = CMDMGR_PAYLOAD_PTR(MsgPtr, JMSG_LIB_TopicSubscribeTlm_t);
+   bool RetStatus = true;
+
+   if (TopicSubscribe->Protocol == JMSG_LIB_TopicProtocol_UDP)
+   {
+      JMSG_TOPIC_TBL_SubscriptionOptEnum_t SubscriptionOpt;
+
+      RetStatus = JMSG_TOPIC_TBL_RegisterConfigSubscriptionCallback(TopicSubscribe->Id, ConfigSubscription);      
+     
+      if (RetStatus)
+      {
+         
+         const JMSG_TOPIC_TBL_Topic_t *Topic = JMSG_TOPIC_TBL_GetTopic(TopicSubscribe->Id);
+         
+         SubscriptionOpt = JMSG_TOPIC_TBL_SubscribeToTopicMsg(TopicSubscribe->Id, JMSG_TOPIC_TBL_SUB_TO_ROLE);
+         if (SubscriptionOpt == JMSG_TOPIC_TBL_SUB_ERR)
+         {
+            RetStatus = false;
+            CFE_EVS_SendEvent(JMSG_UDP_SUBSCRIBE_TOPIC_PLUGIN_EID, CFE_EVS_EventType_ERROR, 
+                              "Error subscribing to topic Id: %d, Name: %s, cFE Msg: 0x%04X(%d)", 
+                              TopicSubscribe->Id, Topic->Name, Topic->Cfe, Topic->Cfe);
+         }
+         else
+         {
+            CFE_EVS_SendEvent(JMSG_UDP_SUBSCRIBE_TOPIC_PLUGIN_EID, CFE_EVS_EventType_INFORMATION, 
+                              "Successfully subscribed to topic Id: %d, Name: %s, cFE Msg: 0x%04X(%d)", 
+                              TopicSubscribe->Id, Topic->Name, Topic->Cfe, Topic->Cfe);
+         }
+         
+      } /* End if registered */
+   
+   } /* End if UDP protocol */
+   
+   return RetStatus;
+   
+} /* End JMSG_UDP_SubscribeToTopicPlugin() */
+
+
+/******************************************************************************
 ** Function: JMSG_UDP_TxChildTask
 **
 ** Notes:
@@ -231,44 +272,6 @@ bool JMSG_UDP_TxChildTask(CHILDMGR_Class_t *ChildMgr)
    return RetStatus;
    
 } /* End JMSG_UDP_TxChildTask() */
-
-
-/******************************************************************************
-** Function: JMSG_UDP_StartTestCmd
-**
-** Notes:
-**   1. Signature must match CMDMGR_CmdFuncPtr_t
-**   2. DataObjPtr is not used
-*/
-bool JMSG_UDP_StartTestCmd(void* DataObjPtr, const CFE_MSG_Message_t *MsgPtr)
-{
-   
-   JMsgUdp->PluginTestActive = true;
-   JMsgUdp->PluginTestId     = JMSG_USR_TopicPlugin_TEST;
-   JMsgUdp->PluginTestParam  = JMSG_TEST_TestParam_UDP;
-   
-   CFE_ES_CreateChildTask(&JMsgUdp->PluginTestChildTaskId, "JMSG_UDP Test",
-                          PluginTestChildTask, 0, 16384, 80, 0);
-   
-   return true;
-   
-} /* JMSG_UDP_StartTestCmd() */
-
-
-/******************************************************************************
-** Function: JMSG_UDP_StopTestCmd
-**
-** Notes:
-**   1. Signature must match CMDMGR_CmdFuncPtr_t
-**   2. DataObjPtr is not used
-*/
-bool JMSG_UDP_StopTestCmd(void* DataObjPtr, const CFE_MSG_Message_t *MsgPtr)
-{
-   
-   JMsgUdp->PluginTestActive = false;
-   return true;
-   
-} /* JMSG_UDP_StopTestCmd() */
 
 
 /******************************************************************************
@@ -342,20 +345,3 @@ static bool ConfigSubscription(const JMSG_TOPIC_TBL_Topic_t *Topic,
    return RetStatus;
    
 } /* End ConfigSubscription() */
-
-
-/******************************************************************************
-** Function: PluginTestChildTask
-**
-*/
-static void PluginTestChildTask(void)
-{
-
-   while (JMsgUdp->PluginTestActive)
-   {
-      JMSG_TOPIC_TBL_RunTopicPluginTest(JMsgUdp->PluginTestId, false, JMsgUdp->PluginTestParam);
-      OS_TaskDelay(2000);
-   }
-
-   
-} /* End PluginTestChildTask() */
