@@ -280,6 +280,11 @@ bool JMSG_UDP_TxChildTask(CHILDMGR_Class_t *ChildMgr)
 ** Callback function that is called when a topic plugin's configuration
 ** is changed. Perform functions that apply to the network layer.
 **
+** Notes:
+**   1. A SB duplicate subscription event message will be sent if two 
+**      subscription requests are made without an unsubscribe requests
+**      between them.
+**
 */
 static bool ConfigSubscription(const JMSG_TOPIC_TBL_Topic_t *Topic, 
                                JMSG_TOPIC_TBL_SubscriptionOptEnum_t ConfigOpt)
@@ -299,7 +304,7 @@ static bool ConfigSubscription(const JMSG_TOPIC_TBL_Topic_t *Topic,
          if (SbStatus == CFE_SUCCESS)
          {
             CFE_EVS_SendEvent(JMSG_UDP_CONFIG_SUBSCRIPTIONS_EID, CFE_EVS_EventType_INFORMATION, 
-                           "Subscribed to SB for topic 0x%04X(%d)", Topic->Cfe, Topic->Cfe);
+                              "Subscribed to SB for topic 0x%04X(%d)", Topic->Cfe, Topic->Cfe);
          }
          else
          {
@@ -319,13 +324,13 @@ static bool ConfigSubscription(const JMSG_TOPIC_TBL_Topic_t *Topic,
          if(SbStatus == CFE_SUCCESS)
          {
             CFE_EVS_SendEvent(JMSG_UDP_CONFIG_SUBSCRIPTIONS_EID, CFE_EVS_EventType_INFORMATION, 
-                             "Unsubscribed from SB for topic %s", Topic->Name);
+                              "Unsubscribed from SB for topic %s", Topic->Name);
          }
          else
          {
             RetStatus = false;
             CFE_EVS_SendEvent(JMSG_UDP_CONFIG_SUBSCRIPTIONS_EID, CFE_EVS_EventType_ERROR, 
-                             "Error unsubscribing from SB for topic %s, status = %d", Topic->Name, SbStatus);            
+                              "Error unsubscribing from SB for topic %s, status = %d", Topic->Name, SbStatus);            
          }
          break;
       
