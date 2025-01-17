@@ -66,7 +66,7 @@ void JMSG_TRANS_Constructor(JMSG_TRANS_Class_t *JMsgTransPtr)
 **
 ** Notes:
 **   1. Assumes caller has ensured a null terminated string
-**   2. Topic strung uses MQTT path style topics with a colon appended to the end 
+**   2. Topic string uses MQTT path style topics with a colon appended to the end 
 **   3. Test strings that can be pasted in console:
 **      echo -n 'hello' >  /dev/udp/localhost/8888   # Error: Null message length since no colon
 **      echo -n 'hello:' >  /dev/udp/localhost/8888  # Error: Can't find topic in table
