@@ -213,7 +213,8 @@ bool JMSG_TRANS_ProcessJMsg(const char *MsgData)
 ** Function: JMSG_TRANS_ProcessSbMsg
 **
 ** Notes:
-**   None
+**   1. Linux command to receive messages on UDP port
+**      nc -u -l -p <port_number>
 **
 */
 bool JMSG_TRANS_ProcessSbMsg(const CFE_MSG_Message_t *CfeMsgPtr,

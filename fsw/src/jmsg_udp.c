@@ -252,6 +252,7 @@ bool JMSG_UDP_TxChildTask(CHILDMGR_Class_t *ChildMgr)
    
    while (true)
    {
+      memset(JMsgUdp->Tx.Buffer, 0, JMSG_UDP_BUF_LEN);
       Status = CFE_SB_ReceiveBuffer(&SbBufPtr, JMsgUdp->JMsgPipe, CFE_SB_PEND_FOREVER);
 
       if (Status == CFE_SUCCESS)

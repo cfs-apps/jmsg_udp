@@ -58,8 +58,8 @@ void JMSG_UDP_TOPIC_PLUGIN_Constructor(JMSG_TOPIC_TBL_ConfigSubscription_t Confi
    // Register all plugins used by JMSG_UDP
    JMSG_TOPIC_TBL_SubscribeToTopicMsg(JMSG_USR_TopicPlugin_CMD, JMSG_TOPIC_TBL_SUB_TO_ROLE);
    JMSG_TOPIC_TBL_SubscribeToTopicMsg(JMSG_USR_TopicPlugin_TLM, JMSG_TOPIC_TBL_SUB_TO_ROLE);
-   JMSG_TOPIC_TBL_SubscribeToTopicMsg(JMSG_USR_TopicPlugin_TEST,JMSG_TOPIC_TBL_SUB_TO_ROLE);  // Test confugred  as sub
-   JMSG_TOPIC_TBL_SubscribeToTopicMsg(JMSG_USR_TopicPlugin_USR_4,JMSG_TOPIC_TBL_SUB_TO_ROLE); // Test confugred  as pub
+   JMSG_TOPIC_TBL_SubscribeToTopicMsg(JMSG_USR_TopicPlugin_TEST,JMSG_TOPIC_TBL_SUB_TO_ROLE);  // Test configured as sub
+   JMSG_TOPIC_TBL_SubscribeToTopicMsg(JMSG_USR_TopicPlugin_USR_4,JMSG_TOPIC_TBL_SUB_TO_ROLE); // Test configured as pub
    JMSG_TOPIC_TBL_SubscribeToTopicMsg(JMSG_UDP_PLUGIN_TopicPlugin_RpiDemo,JMSG_TOPIC_TBL_SUB_TO_ROLE);
     
 } /* JMSG_TOPIC_PLUGIN_Constructor() */
