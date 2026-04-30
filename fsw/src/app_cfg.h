@@ -42,10 +42,11 @@
 ** Versions:
 **
 ** 1.0 - Initial release tested with jmsg_lib 1.0 and jmsg_mqtt 2.0
+** 1.1 - Updates for JMSG project initial release
 */
 
 #define  JMSG_UDP_APP_MAJOR_VER   1
-#define  JMSG_UDP_APP_MINOR_VER   0
+#define  JMSG_UDP_APP_MINOR_VER   1
 
 
 /******************************************************************************
@@ -70,10 +71,10 @@
 #define CFG_APP_CFE_NAME       APP_CFE_NAME
 #define CFG_APP_MAIN_PERF_ID   APP_MAIN_PERF_ID
 
-#define CFG_JMSG_UDP_CMD_TOPICID                  JMSG_UDP_CMD_TOPICID
-#define CFG_JMSG_UDP_STATUS_TLM_TOPICID           JMSG_UDP_STATUS_TLM_TOPICID
-#define CFG_SEND_STATUS_TLM_TOPICID               BC_SCH_2_SEC_TOPICID
-#define CFG_JMSG_LIB_TOPIC_SUBSCRIBE_TLM_TOPICID  JMSG_LIB_TOPIC_SUBSCRIBE_TLM_TOPICID
+#define CFG_JMSG_UDP_CMD_TOPICID                      JMSG_UDP_CMD_TOPICID
+#define CFG_JMSG_UDP_STATUS_TLM_TOPICID               JMSG_UDP_STATUS_TLM_TOPICID
+#define CFG_SEND_STATUS_TLM_TOPICID                   BC_SCH_2_SEC_TOPICID
+#define CFG_JMSG_LIB_TOPIC_SUBSCRIBE_REQ_TLM_TOPICID  JMSG_LIB_TOPIC_SUBSCRIBE_REQ_TLM_TOPICID
 
       
 #define CFG_CMD_PIPE_NAME   CMD_PIPE_NAME
@@ -104,7 +105,7 @@
    XX(JMSG_UDP_CMD_TOPICID,uint32) \
    XX(JMSG_UDP_STATUS_TLM_TOPICID,uint32) \
    XX(BC_SCH_2_SEC_TOPICID,uint32) \
-   XX(JMSG_LIB_TOPIC_SUBSCRIBE_TLM_TOPICID,uint32) \
+   XX(JMSG_LIB_TOPIC_SUBSCRIBE_REQ_TLM_TOPICID,uint32) \
    XX(CMD_PIPE_NAME,char*) \
    XX(CMD_PIPE_DEPTH,uint32) \
    XX(JMSG_PIPE_NAME,char*) \

@@ -180,7 +180,7 @@ static int32 InitApp(void)
 
       JMsgUdpApp.CmdMid         = CFE_SB_ValueToMsgId(INITBL_GetIntConfig(INITBL_OBJ, CFG_JMSG_UDP_CMD_TOPICID));
       JMsgUdpApp.SendStatusMid  = CFE_SB_ValueToMsgId(INITBL_GetIntConfig(INITBL_OBJ, CFG_SEND_STATUS_TLM_TOPICID));
-      JMsgUdpApp.TopicSubTlmMid = CFE_SB_ValueToMsgId(INITBL_GetIntConfig(INITBL_OBJ, CFG_JMSG_LIB_TOPIC_SUBSCRIBE_TLM_TOPICID));
+      JMsgUdpApp.TopicSubTlmMid = CFE_SB_ValueToMsgId(INITBL_GetIntConfig(INITBL_OBJ, CFG_JMSG_LIB_TOPIC_SUBSCRIBE_REQ_TLM_TOPICID));
    
       /* Child Manager constructor sends error events */
 

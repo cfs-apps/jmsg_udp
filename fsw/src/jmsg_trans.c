@@ -250,7 +250,7 @@ bool JMSG_TRANS_ProcessSbMsg(const CFE_MSG_Message_t *CfeMsgPtr,
             *Topic   = JsonMsgTopic; 
             *Payload = JsonMsgPayload;
             RetStatus = true;
-            CFE_EVS_SendEvent(JMSG_TRANS_PROCESS_SB_MSG_EID, CFE_EVS_EventType_INFORMATION,
+            CFE_EVS_SendEvent(JMSG_TRANS_PROCESS_SB_MSG_EID, CFE_EVS_EventType_DEBUG,
                               "Created JMSG plugin topic %s message %s",
                               JsonMsgTopic, JsonMsgPayload);             
             JMsgTrans->ValidSbMsgCnt++;
