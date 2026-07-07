@@ -60,8 +60,10 @@ DEFINE_ENUM(Config,APP_CONFIG)
 
 static CFE_EVS_BinFilter_t  EventFilters[] =
 {  
-   /* Event ID                           Mask */
-   {JMSG_UDP_RX_CHILD_TASK_EID, CFE_EVS_FIRST_4_STOP} // CFE_EVS_NO_FILTER
+     /* Event ID                    Mask */
+   { JMSG_UDP_RX_CHILD_TASK_EID,    CFE_EVS_FIRST_4_STOP}, // CFE_EVS_NO_FILTER
+   { JMSG_TRANS_PROCESS_JMSG_EID,   CFE_EVS_FIRST_8_STOP},
+   { JMSG_TRANS_PROCESS_SB_MSG_EID, CFE_EVS_FIRST_8_STOP}
 };
 
 /*****************/
@@ -202,12 +204,12 @@ static int32 InitApp(void)
       ** Initialize app level interfaces
       */
  
+      SbQos.Priority    = 0;
+      SbQos.Reliability = 0;
+
       CFE_SB_CreatePipe(&JMsgUdpApp.CmdPipe, INITBL_GetIntConfig(INITBL_OBJ, CFG_CMD_PIPE_DEPTH), INITBL_GetStrConfig(INITBL_OBJ, CFG_CMD_PIPE_NAME));  
       CFE_SB_Subscribe(JMsgUdpApp.CmdMid, JMsgUdpApp.CmdPipe);
       CFE_SB_Subscribe(JMsgUdpApp.SendStatusMid, JMsgUdpApp.CmdPipe);
-
-      SbQos.Priority    = 0;
-      SbQos.Reliability = 0;
       CFE_SB_SubscribeEx(JMsgUdpApp.TopicSubTlmMid, JMsgUdpApp.CmdPipe, SbQos, JMSG_PLATFORM_TOPIC_PLUGIN_MAX);
 
       CMDMGR_Constructor(CMDMGR_OBJ);

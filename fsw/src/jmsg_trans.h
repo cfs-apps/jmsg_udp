@@ -43,7 +43,11 @@
 ** Events
 */
 
-// TODO: Decide if need separate debug message EIDs that can be filtered
+/*
+** A single JMSG/SB EID is used for different event types and
+** filters are defined for each EID. The translation process can
+** can be fully traced without flooding events.
+*/ 
 #define JMSG_TRANS_PROCESS_JMSG_EID       (JMSG_TRANS_BASE_EID + 0)
 #define JMSG_TRANS_PROCESS_SB_MSG_EID     (JMSG_TRANS_BASE_EID + 1)
 

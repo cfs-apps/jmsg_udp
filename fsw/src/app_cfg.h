@@ -41,7 +41,7 @@
 /*
 ** Versions:
 **
-** 1.0 - Initial release tested with jmsg_lib 1.0 and jmsg_mqtt 2.0
+** 1.0 - Initial release tested with jmsg_lib 1.0
 ** 1.1 - Updates for JMSG project initial release
 */
 

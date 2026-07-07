@@ -16,7 +16,7 @@
 **   Manage UDP communications and JSON-SB message translations 
 **
 ** Notes:
-**   TODO: Resolve MQTT_GW topic translation dependency
+**   None
 **
 */
 

@@ -18,10 +18,10 @@
 ** Notes:
 **   1. Each supported JMSG topic is listed in a JSON file and each
 **      topic has a JSON file that defines the topic's content.
-**   2. The Basecamp JSON table coding idiom is to use a separate object to manage 
+**   2. The Basecamp JSON table coding idiom is to use a separate object to
 **      the table. Since UDP_COMM has very little functionality beyond
-**      processing the table, a single object is used for management functions
-**      and table processing.
+**      manage processing the table, a single object is used for management
+**      functions and table processing.
 **
 */
 
@@ -214,7 +214,7 @@ bool JMSG_TRANS_ProcessJMsg(const char *MsgData)
 **
 ** Notes:
 **   1. Linux command to receive messages on UDP port
-**      nc -u -l -p <port_number>
+**      nc -ul <port_number>
 **
 */
 bool JMSG_TRANS_ProcessSbMsg(const CFE_MSG_Message_t *CfeMsgPtr,

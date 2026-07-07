@@ -168,7 +168,7 @@ bool JMSG_UDP_RxChildTask(CHILDMGR_Class_t *ChildMgr)
       if (Status >= 0)
       {
          JMsgUdp->Rx.MsgCnt++;
-         CFE_EVS_SendEvent(JMSG_UDP_RX_CHILD_TASK_EID, CFE_EVS_EventType_INFORMATION, 
+         CFE_EVS_SendEvent(JMSG_UDP_RX_CHILD_TASK_EID, CFE_EVS_EventType_DEBUG, 
                            "JMSG UDP Gateway Rx received message: %s", JMsgUdp->Rx.Buffer);
          JMSG_TRANS_ProcessJMsg(JMsgUdp->Rx.Buffer);
       }
