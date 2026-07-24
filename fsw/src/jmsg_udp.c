@@ -215,13 +215,13 @@ bool JMSG_UDP_SubscribeToTopicPlugin(const CFE_MSG_Message_t *MsgPtr)
          {
             RetStatus = false;
             CFE_EVS_SendEvent(JMSG_UDP_SUBSCRIBE_TOPIC_PLUGIN_EID, CFE_EVS_EventType_ERROR, 
-                              "Error subscribing to topic Id: %d, Name: %s, cFE Msg: 0x%04X(%d)", 
+                              "Error subscribing to topic: %d, Name: %s, cFE Msg: 0x%04X(%d)", 
                               TopicSubscribeReq->Id, Topic->Name, Topic->Cfe, Topic->Cfe);
          }
          else
          {
             CFE_EVS_SendEvent(JMSG_UDP_SUBSCRIBE_TOPIC_PLUGIN_EID, CFE_EVS_EventType_INFORMATION, 
-                              "Successfully subscribed to topic Id: %d, Name: %s, cFE Msg: 0x%04X(%d)", 
+                              "Successfully subscribed to topic: %d, Name: %s, cFE Msg: 0x%04X(%d)", 
                               TopicSubscribeReq->Id, Topic->Name, Topic->Cfe, Topic->Cfe);
          }
          
