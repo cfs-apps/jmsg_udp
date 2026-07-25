@@ -43,9 +43,10 @@
 **
 ** 1.0 - Initial release tested with jmsg_lib 1.0
 ** 1.1 - Updates for JMSG project initial release
+** 3.1 - Compatible with Basecamp 3.x new app version management
 */
 
-#define  JMSG_UDP_APP_MAJOR_VER   1
+#define  JMSG_UDP_APP_MAJOR_VER   3
 #define  JMSG_UDP_APP_MINOR_VER   1
 
 
