@@ -24,7 +24,7 @@
       "load_addr": 0,
       "exception-action": 0,
       "app-framework": "osk",
-      "tables": ["jmsg_udp_ini.json"]
+      "json-tables": ["jmsg_udp_ini.json"]
    },
 
    "requires": ["app_c_fw", "jmsg_lib", "jmsg_app"]

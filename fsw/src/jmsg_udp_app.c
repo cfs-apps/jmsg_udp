@@ -180,9 +180,9 @@ static int32 InitApp(void)
 
       JMSG_UDP_Constructor(JMSG_UDP_OBJ, INITBL_OBJ);
 
-      JMsgUdpApp.CmdMid         = CFE_SB_ValueToMsgId(INITBL_GetIntConfig(INITBL_OBJ, CFG_JMSG_UDP_CMD_TOPICID));
-      JMsgUdpApp.SendStatusMid  = CFE_SB_ValueToMsgId(INITBL_GetIntConfig(INITBL_OBJ, CFG_SEND_STATUS_TLM_TOPICID));
-      JMsgUdpApp.TopicSubTlmMid = CFE_SB_ValueToMsgId(INITBL_GetIntConfig(INITBL_OBJ, CFG_JMSG_LIB_TOPIC_SUBSCRIBE_REQ_TLM_TOPICID));
+      JMsgUdpApp.CmdMid           = CFE_SB_ValueToMsgId(INITBL_GetIntConfig(INITBL_OBJ, CFG_JMSG_UDP_CMD_TOPICID));
+      JMsgUdpApp.SendStatusTlmMid = CFE_SB_ValueToMsgId(INITBL_GetIntConfig(INITBL_OBJ, CFG_SEND_STATUS_TLM_TOPICID));
+      JMsgUdpApp.TopicSubTlmMid   = CFE_SB_ValueToMsgId(INITBL_GetIntConfig(INITBL_OBJ, CFG_JMSG_LIB_TOPIC_SUBSCRIBE_REQ_TLM_TOPICID));
    
       /* Child Manager constructor sends error events */
 
@@ -209,12 +209,12 @@ static int32 InitApp(void)
 
       CFE_SB_CreatePipe(&JMsgUdpApp.CmdPipe, INITBL_GetIntConfig(INITBL_OBJ, CFG_CMD_PIPE_DEPTH), INITBL_GetStrConfig(INITBL_OBJ, CFG_CMD_PIPE_NAME));  
       CFE_SB_Subscribe(JMsgUdpApp.CmdMid, JMsgUdpApp.CmdPipe);
-      CFE_SB_Subscribe(JMsgUdpApp.SendStatusMid, JMsgUdpApp.CmdPipe);
+      CFE_SB_Subscribe(JMsgUdpApp.SendStatusTlmMid, JMsgUdpApp.CmdPipe);
       CFE_SB_SubscribeEx(JMsgUdpApp.TopicSubTlmMid, JMsgUdpApp.CmdPipe, SbQos, JMSG_PLATFORM_TOPIC_PLUGIN_MAX);
 
       CMDMGR_Constructor(CMDMGR_OBJ);
-      CMDMGR_RegisterFunc(CMDMGR_OBJ, JMSG_UDP_NOOP_CC,  NULL, JMSG_UDP_APP_NoOpCmd,     0);
-      CMDMGR_RegisterFunc(CMDMGR_OBJ, JMSG_UDP_RESET_CC, NULL, JMSG_UDP_APP_ResetAppCmd, 0);
+      CMDMGR_RegisterFunc(CMDMGR_OBJ, EDS_CONTAINER_JMSG_UDP_NOOP_CC,  NULL, JMSG_UDP_APP_NoOpCmd,     0);
+      CMDMGR_RegisterFunc(CMDMGR_OBJ, EDS_CONTAINER_JMSG_UDP_RESET_CC, NULL, JMSG_UDP_APP_ResetAppCmd, 0);
          
       CFE_MSG_Init(CFE_MSG_PTR(JMsgUdpApp.StatusTlm.TelemetryHeader), CFE_SB_ValueToMsgId(INITBL_GetIntConfig(INITBL_OBJ, CFG_JMSG_UDP_STATUS_TLM_TOPICID)), sizeof(JMSG_UDP_StatusTlm_t));
 
@@ -262,7 +262,7 @@ static int32 ProcessCommands(void)
          {
             CMDMGR_DispatchFunc(CMDMGR_OBJ, &SbBufPtr->Msg);
          } 
-         else if (CFE_SB_MsgId_Equal(MsgId, JMsgUdpApp.SendStatusMid))
+         else if (CFE_SB_MsgId_Equal(MsgId, JMsgUdpApp.SendStatusTlmMid))
          {   
             SendStatusPkt();
          }

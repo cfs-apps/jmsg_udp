@@ -44,10 +44,11 @@
 ** 1.0 - Initial release tested with jmsg_lib 1.0
 ** 1.1 - Updates for JMSG project initial release
 ** 3.1 - Compatible with Basecamp 3.x new app version management
+** 4.0 - Updated to cFS 7.0 (Basecamp 4.0 release)
 */
 
-#define  JMSG_UDP_APP_MAJOR_VER   3
-#define  JMSG_UDP_APP_MINOR_VER   1
+#define  JMSG_UDP_APP_MAJOR_VER   4
+#define  JMSG_UDP_APP_MINOR_VER   0
 
 
 /******************************************************************************
@@ -72,9 +73,9 @@
 #define CFG_APP_CFE_NAME       APP_CFE_NAME
 #define CFG_APP_MAIN_PERF_ID   APP_MAIN_PERF_ID
 
+#define CFG_SEND_STATUS_TLM_TOPICID                   BC_SCH_2_SEC_TOPICID  // Use different CFG_ name instead of BC_SCH_*_TOPICID to localize impact if rate changes
 #define CFG_JMSG_UDP_CMD_TOPICID                      JMSG_UDP_CMD_TOPICID
 #define CFG_JMSG_UDP_STATUS_TLM_TOPICID               JMSG_UDP_STATUS_TLM_TOPICID
-#define CFG_SEND_STATUS_TLM_TOPICID                   BC_SCH_2_SEC_TOPICID
 #define CFG_JMSG_LIB_TOPIC_SUBSCRIBE_REQ_TLM_TOPICID  JMSG_LIB_TOPIC_SUBSCRIBE_REQ_TLM_TOPICID
 
       
@@ -103,9 +104,9 @@
 #define APP_CONFIG(XX) \
    XX(APP_CFE_NAME,char*) \
    XX(APP_MAIN_PERF_ID,uint32) \
+   XX(BC_SCH_2_SEC_TOPICID,uint32) \
    XX(JMSG_UDP_CMD_TOPICID,uint32) \
    XX(JMSG_UDP_STATUS_TLM_TOPICID,uint32) \
-   XX(BC_SCH_2_SEC_TOPICID,uint32) \
    XX(JMSG_LIB_TOPIC_SUBSCRIBE_REQ_TLM_TOPICID,uint32) \
    XX(CMD_PIPE_NAME,char*) \
    XX(CMD_PIPE_DEPTH,uint32) \
@@ -136,9 +137,9 @@ DECLARE_ENUM(Config,APP_CONFIG)
 ** exceeded so it is the developer's responsibility to verify the ranges. 
 */
 
-#define JMSG_UDP_APP_BASE_EID  (APP_C_FW_APP_BASE_EID +  0)
-#define JMSG_UDP_BASE_EID      (APP_C_FW_APP_BASE_EID + 20)
-#define JMSG_TRANS_BASE_EID    (APP_C_FW_APP_BASE_EID + 30)
+#define JMSG_UDP_APP_BASE_EID  (EdsParam_APP_C_FW_APP_BASE_EID +  0)
+#define JMSG_UDP_BASE_EID      (EdsParam_APP_C_FW_APP_BASE_EID + 20)
+#define JMSG_TRANS_BASE_EID    (EdsParam_APP_C_FW_APP_BASE_EID + 30)
 
 // Topic plugin macros are defined in jmsg_lib/eds/jmsg_usr.xml
 
@@ -149,7 +150,5 @@ DECLARE_ENUM(Config,APP_CONFIG)
 */
 
 #define JMSG_UDP_BUF_LEN   4096  /* Must accomodate Rx and Tx maximum message length */
-
-
 
 #endif /* _app_cfg_ */
