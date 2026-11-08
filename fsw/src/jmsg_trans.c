@@ -77,13 +77,13 @@ void JMSG_TRANS_Constructor(JMSG_TRANS_Class_t *JMsgTransPtr)
 bool JMSG_TRANS_ProcessJMsg(const char *MsgData)
 {
    char    *MsgPayload;
-   char    MsgTopicName[JMSG_PLATFORM_TOPIC_NAME_MAX_LEN]; 
+   char    MsgTopicName[EdsParam_JMSG_PLATFORM_TOPIC_NAME_MAX_LEN]; 
    uint16  MsgTopicNameLen;
    uint16  MsgPayloadLen;
    uint16  TblTopicNameLen;
    bool    MsgFound = false;
    const JMSG_TOPIC_TBL_Topic_t *TopicTblEntry;
-   JMSG_PLATFORM_TopicPlugin_Enum_t TopicPluginId = JMSG_PLATFORM_TopicPlugin_Enum_t_MIN;
+   JMSG_PLATFORM_TopicPlugin_Enum_t TopicPluginId = EdsDataType_EdsEnum_JMSG_PLATFORM_TopicPlugin_t_MIN;
 
    JMSG_TOPIC_TBL_JsonToCfe_t JsonToCfe;
    CFE_MSG_Message_t *CfeMsg;
@@ -108,14 +108,14 @@ bool JMSG_TRANS_ProcessJMsg(const char *MsgData)
       CFE_EVS_SendEvent(JMSG_TRANS_PROCESS_JMSG_EID, CFE_EVS_EventType_DEBUG,
                         "Message topic name len %d, text: %s", MsgTopicNameLen, MsgTopicName);
 
-      while (!MsgFound && TopicPluginId <= JMSG_PLATFORM_TopicPlugin_Enum_t_MAX)
+      while (!MsgFound && TopicPluginId <= EdsDataType_EdsEnum_JMSG_PLATFORM_TopicPlugin_t_MAX)
       {
          TopicTblEntry = JMSG_TOPIC_TBL_GetTopic(TopicPluginId);
          if (TopicTblEntry != NULL)
          {
             TblTopicNameLen = strlen(TopicTblEntry->Name);
             
-            if (TblTopicNameLen < JMSG_PLATFORM_TOPIC_NAME_MAX_LEN)
+            if (TblTopicNameLen < EdsParam_JMSG_PLATFORM_TOPIC_NAME_MAX_LEN)
             {
                
                CFE_EVS_SendEvent(JMSG_TRANS_PROCESS_JMSG_EID, CFE_EVS_EventType_DEBUG,
@@ -134,7 +134,7 @@ bool JMSG_TRANS_ProcessJMsg(const char *MsgData)
             {
                CFE_EVS_SendEvent(JMSG_TRANS_PROCESS_JMSG_EID, CFE_EVS_EventType_ERROR,
                                  "Table topic name %s with length %d exceeds maximum length %d", 
-                                 TopicTblEntry->Name, TblTopicNameLen, JMSG_PLATFORM_TOPIC_NAME_MAX_LEN);               
+                                 TopicTblEntry->Name, TblTopicNameLen, EdsParam_JMSG_PLATFORM_TOPIC_NAME_MAX_LEN);               
             }
          } /* End while loop */
          
@@ -240,7 +240,7 @@ bool JMSG_TRANS_ProcessSbMsg(const CFE_MSG_Message_t *CfeMsgPtr,
                         "JMSG_TRANS_ProcessSbMsg: Received SB message ID 0x%04X(%d)", 
                         CFE_SB_MsgIdToValue(MsgId), CFE_SB_MsgIdToValue(MsgId)); 
       
-      if ((TopicIndex = JMSG_TOPIC_TBL_MsgIdToTopicPlugin(MsgId)) != JMSG_PLATFORM_TOPIC_PLUGIN_UNDEF)
+      if ((TopicIndex = JMSG_TOPIC_TBL_MsgIdToTopicPlugin(MsgId)) != EdsParam_JMSG_PLATFORM_TOPIC_PLUGIN_UNDEF)
       {
          
          CfeToJson = JMSG_TOPIC_TBL_GetCfeToJson(TopicIndex, &JsonMsgTopic);    

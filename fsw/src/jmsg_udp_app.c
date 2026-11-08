@@ -210,7 +210,7 @@ static int32 InitApp(void)
       CFE_SB_CreatePipe(&JMsgUdpApp.CmdPipe, INITBL_GetIntConfig(INITBL_OBJ, CFG_CMD_PIPE_DEPTH), INITBL_GetStrConfig(INITBL_OBJ, CFG_CMD_PIPE_NAME));  
       CFE_SB_Subscribe(JMsgUdpApp.CmdMid, JMsgUdpApp.CmdPipe);
       CFE_SB_Subscribe(JMsgUdpApp.SendStatusTlmMid, JMsgUdpApp.CmdPipe);
-      CFE_SB_SubscribeEx(JMsgUdpApp.TopicSubTlmMid, JMsgUdpApp.CmdPipe, SbQos, JMSG_PLATFORM_TOPIC_PLUGIN_MAX);
+      CFE_SB_SubscribeEx(JMsgUdpApp.TopicSubTlmMid, JMsgUdpApp.CmdPipe, SbQos, EdsParam_JMSG_PLATFORM_TOPIC_PLUGIN_MAX);
 
       CMDMGR_Constructor(CMDMGR_OBJ);
       CMDMGR_RegisterFunc(CMDMGR_OBJ, EDS_CONTAINER_JMSG_UDP_NOOP_CC,  NULL, JMSG_UDP_APP_NoOpCmd,     0);
